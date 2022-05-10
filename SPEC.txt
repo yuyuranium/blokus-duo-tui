@@ -1,0 +1,68 @@
+== SPEC.txt ==
+
+[Symbols]
+
+ ■ ■ ■ ■ ■ ■
+ ● ● ● ● ● ●
+ □ □ □ □ □ □
+ ○ ○ ○ ○ ○ ○
+ ¤ ¤ ¤ ¤ ¤ ¤
+ · · · · · ·
+
+[Tiles]
+
+There are a total of 42 game tiles, organized into 21 shapes in each of 2
+colors: black and white. The 21 shapes are based on free polynominoes of one to
+five squares (1 monomino, 1 domino, 2 trominoes, 5 tetrominoes, and 12
+pentominoes). Circle symbols are used to indicate the pivot of the tile, by
+which we can apply rotation and reflection on them. All the tiles are listed
+below by the order of free polynominoes:
+
+   e
+1: ●
+
+    r
+2: ● ■
+
+     s      a
+3: ● ■ ■   ■ ● 
+             ■
+
+      i        l       z      q      t
+4: ● ■ ■ ■   ■ ■ ●   ■ ●     ● ■     ■
+                 ■     ■ ■   ■ ■   ■ ● ■
+
+     F     I    L     N     P      T
+5:   ■ ■   ■   ■       ■   ■ ■   ■ ● ■
+   ■ ●     ■   ■     ■ ●   ■ ●     ■
+     ■     ●   ■     ■     ■       ■
+           ■   ● ■   ■
+           ■
+
+     U       V       W       X      Y      Z
+               ■       ■     ■       ■   ■ ■
+   ■   ■       ■     ● ■   ■ ● ■   ■ ●     ●
+   ■ ● ■   ■ ■ ●   ■ ■       ■       ■     ■ ■
+                                     ■   
+
+[Board]
+
+Blokus Duo is played by two players on a 14x14 board. The row and column numbers
+are encoded in hexdecimal numbers, from 0x1 to 0xe.
+
+  1 2 3 4 5 6 7 8 9 a b c d e
+1 · · · · · · · · · · · · · ·
+2 · · · · · · · · · · · · · ·
+3 · · · · · · · · · · · · · ·
+4 · · · · · · · · · · · · · ·
+5 · · · · · · · · · ¤ · · · ·
+6 · · · · · · · · · · · · · ·
+7 · · · · · · · · · · · · · ·
+8 · · · · · · · · · · · · · ·
+9 · · · · · · · · · · · · · ·
+a · · · · ¤ · · · · · · · · ·
+b · · · · · · · · · · · · · ·
+c · · · · · · · · · · · · · ·
+d · · · · · · · · · · · · · ·
+e · · · · · · · · · · · · · ·
+
