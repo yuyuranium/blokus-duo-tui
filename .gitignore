@@ -6,6 +6,7 @@ build/*
 
 # Language server setting
 compile_commands.json
+.cache/*
 
 # Prerequisites
 *.d
