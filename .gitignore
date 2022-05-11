@@ -1,6 +1,9 @@
 # Build directory
 build/*
 
+# Editor configurations
+.vimrc
+
 # Prerequisites
 *.d
 
