@@ -4,6 +4,9 @@ build/*
 # Editor configurations
 .vimrc
 
+# Language server setting
+compile_commands.json
+
 # Prerequisites
 *.d
 
