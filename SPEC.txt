@@ -18,13 +18,13 @@ pentominoes). Circle symbols are used to indicate the pivot of the tile, by
 which we can apply rotation and reflection on them. All the tiles are listed
 below by the order of free polynominoes:
 
-   O
+   M
 1: ●
 
     D
 2: ● ■
 
-     M      A
+     R      A
 3: ■ ● ■   ■ ● 
              ■
 
