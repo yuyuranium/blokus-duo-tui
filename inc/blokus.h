@@ -43,6 +43,7 @@ typedef struct {
 typedef struct {
     shape_t shape;
     coord_t *blks;
+    coord_t pos;
     int blk_cnt;
     int can_mir;
     int rot_cnt;
@@ -60,9 +61,13 @@ typedef struct {
 extern const coord_t STARTING_POINT[2];
 extern const coord_t CORNER[4];
 extern const coord_t EDGE[4];
+extern const coord_t BLKS[SHAPE_Z + 1][5];
+extern const int BLK_CNT[SHAPE_Z + 1];
+extern const int CAN_MIR[SHAPE_Z + 1];
+extern const int ROT_CNT[SHAPE_Z + 1];
 
 gcb_t *init_gcb();
-int test_place(gcb_t *gcb, tile_t *tile, coord_t coord);
+int test_place(gcb_t *gcb, tile_t *tile);
 tile_t *make_tile(shape_t shape);
 int rot_tile(tile_t *tile, int theta);
 int mir_tile(tile_t *tile);

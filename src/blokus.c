@@ -20,6 +20,152 @@ const coord_t EDGE[4] = {
     {.y = 1, .x = 0},
 };
 
+const coord_t BLKS[SHAPE_Z + 1][5] = {
+    {   // SHAPE_O
+        {.y = 0, .x = 0},
+    },
+    {   // SHAPE_D
+        {.y = 0, .x = 0},
+        {.y = 0, .x = 1},
+    },
+    {   // SHAPE_M
+        {.y = 0, .x = 0},
+        {.y = 0, .x = -1},
+        {.y = 0, .x = 1},
+    },
+    {   // SHAPE_A
+        {.y = 0, .x = 0},
+        {.y = 0, .x = -1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_E
+        {.y = 0, .x = 0},
+        {.y = 0, .x = -1},
+        {.y = 0, .x = 1},
+        {.y = 0, .x = 2},
+    },
+    {   // SHAPE_J
+        {.y = 0, .x = 0},
+        {.y = -2, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = -1},
+    },
+    {   // SHAPE_S
+        {.y = 0, .x = 0},
+        {.y = -1, .x = -1},
+        {.y = 0, .x = -1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_Q
+        {.y = 0, .x = 0},
+        {.y = 0, .x = 1},
+        {.y = 1, .x = 0},
+        {.y = 1, .x = 1},
+    },
+    {   // SHAPE_H
+        {.y = 0, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = 1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_F
+        {.y = 0, .x = 0},
+        {.y = -1, .x = -1},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = 1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_I
+        {.y = 0, .x = 0},
+        {.y = 0, .x = -2},
+        {.y = 0, .x = -1},
+        {.y = 0, .x = 1},
+        {.y = 0, .x = 2},
+    },
+    {   // SHAPE_L
+        {.y = 0, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = -3},
+        {.y = 0, .x = -2},
+        {.y = 0, .x = -1},
+    },
+    {   // SHAPE_N
+        {.y = 0, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = -3},
+        {.y = 0, .x = -2},
+        {.y = 0, .x = -1},
+    },
+    {   // SHAPE_P
+        {.y = 0, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = -1, .x = 1},
+        {.y = 0, .x = 1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_T
+        {.y = 0, .x = 0},
+        {.y = 0, .x = -1},
+        {.y = 0, .x = 1},
+        {.y = 1, .x = 0},
+        {.y = 2, .x = 0},
+    },
+    {   // SHAPE_U
+        {.y = 0, .x = 0},
+        {.y = -1, .x = -1},
+        {.y = -1, .x = 1},
+        {.y = 0, .x = -1},
+        {.y = 0, .x = 1},
+    },
+    {   // SHAPE_V
+        {.y = 0, .x = 0},
+        {.y = -1, .x = -1},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = 1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_W
+        {.y = 0, .x = 0},
+        {.y = -2, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = 1},
+        {.y = 0, .x = 2},
+    },
+    {   // SHAPE_X
+        {.y = 0, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = -1},
+        {.y = 0, .x = 1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_Y
+        {.y = 0, .x = 0},
+        {.y = -1, .x = 0},
+        {.y = 0, .x = -2},
+        {.y = 0, .x = -1},
+        {.y = 1, .x = 0},
+    },
+    {   // SHAPE_Z
+        {.y = 0, .x = 0},
+        {.y = -1, .x = -1},
+        {.y = -1, .x = 0},
+        {.y = 1, .x = 0},
+        {.y = 1, .x = 1},
+    },
+};
+
+const int BLK_CNT[SHAPE_Z + 1] = {
+    1, 2, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+};
+
+const int CAN_MIR[SHAPE_Z + 1] = {
+    0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1
+};
+
+const int ROT_CNT[SHAPE_Z + 1] = {
+    0, 1, 1, 3, 1, 3, 1, 0, 3, 3, 1, 3, 3, 3, 3, 3, 3, 3, 0, 3, 1
+};
+
 gcb_t *init_gcb()
 {
     gcb_t *gcb = malloc(sizeof(gcb_t));
@@ -44,14 +190,15 @@ gcb_t *init_gcb()
     return gcb;
 }
 
-int test_place(gcb_t *gcb, tile_t *tile, coord_t coord)
+int test_place(gcb_t *gcb, tile_t *tile)
 {
     int p = gcb->turn, valid = 0;
+    coord_t pos = tile->pos;
 
     // If the player hasn't place any tiles yet
     if (gcb->score[p] == 0) {
         for (int i = 0; i < tile->blk_cnt; ++i) {
-            int y = coord.y + tile->blks[i].y, x = coord.x + tile->blks[i].x;
+            int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
 
             // Out of map
             if (!within_map(y, x))
@@ -63,7 +210,7 @@ int test_place(gcb_t *gcb, tile_t *tile, coord_t coord)
         }
     } else {
         for (int i = 0; i < tile->blk_cnt; ++i) {
-            int y = coord.y + tile->blks[i].y, x = coord.x + tile->blks[i].x;
+            int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
 
             // Check if within map
             if (within_map(y, x)) {
@@ -95,14 +242,15 @@ int test_place(gcb_t *gcb, tile_t *tile, coord_t coord)
     return (valid)? 0 : -1;
 }
 
-int place_tile(gcb_t *gcb, tile_t *tile, coord_t coord)
+int place_tile(gcb_t *gcb, tile_t *tile)
 {
-    if (test_place(gcb, tile, coord) < 0)
+    if (test_place(gcb, tile) < 0)
         return -1;
 
     int p = gcb->turn;
+    coord_t pos = tile->pos;
     for (int i = 0; i < tile->blk_cnt; ++i) {
-        int y = coord.y + tile->blks[i].y, x = coord.x + tile->blks[i].x;
+        int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
         int k = N_ROW * y + x;
         gcb->map[y][x] = p;
         gcb->next_empty[gcb->prev_empty[k]] = gcb->next_empty[k];
@@ -114,190 +262,210 @@ int place_tile(gcb_t *gcb, tile_t *tile, coord_t coord)
     return 0;
 }
 
+// tile_t *make_tile(shape_t shape)
+// {
+//     tile_t *tile = malloc(sizeof(tile_t));
+//     int blk_cnt, can_mir = 0, rot_cnt = 0;
+//     coord_t *blks;
+//
+//     if (shape <= SHAPE_O) {
+//         // monomino
+//         blk_cnt = 1;
+//         blks = malloc(blk_cnt * sizeof(coord_t));
+//         blks[0].y = 0; blks[0].x = 0;
+//     } else if (shape <= SHAPE_R) {
+//         // domino
+//         blk_cnt = 2;
+//         blks = malloc(blk_cnt * sizeof(coord_t));
+//         blks[0].y = 0; blks[0].x = 0;
+//         blks[1].y = 0; blks[1].x = 1;
+//         rot_cnt = 1;
+//     } else if (shape <= SHAPE_A) {
+//         // trominoes
+//         blk_cnt = 3;
+//         blks = malloc(blk_cnt * sizeof(coord_t));
+//         blks[0].y = 0; blks[0].x = 0;
+//         switch (shape) {
+//         case SHAPE_M:
+//             blks[1].y = 0; blks[1].x = -1;
+//             blks[2].y = 0; blks[2].x = 1;
+//             rot_cnt = 1;
+//             break;
+//         case SHAPE_A:
+//             blks[1].y = 0; blks[1].x = -1;
+//             blks[2].y = 1; blks[2].x = 0;
+//             rot_cnt = 3;
+//             break;
+//         default:
+//             ;
+//         }
+//     } else if (shape <= SHAPE_H) {
+//         // tetrominoes
+//         blk_cnt = 4;
+//         blks = malloc(blk_cnt * sizeof(coord_t));
+//         blks[0].y = 0; blks[0].x = 0;
+//         switch (shape) {
+//         case SHAPE_E:
+//             blks[1].y = 0; blks[1].x = -1;
+//             blks[2].y = 0; blks[2].x = 1;
+//             blks[3].y = 0; blks[3].x = 2;
+//             rot_cnt = 1;
+//             break;
+//         case SHAPE_J:
+//             blks[1].y = -2; blks[1].x = 0;
+//             blks[2].y = -1; blks[2].x = 0;
+//             blks[3].y = 0; blks[3].x = -1;
+//             rot_cnt = 3;
+//             can_mir = 1;
+//             break;
+//         case SHAPE_S:
+//             blks[1].y = -1; blks[1].x = -1;
+//             blks[2].y = 0; blks[2].x = -1;
+//             blks[3].y = 1; blks[3].x = 0;
+//             rot_cnt = 1;
+//             can_mir = 1;
+//             break;
+//         case SHAPE_Q:
+//             blks[1].y = 0; blks[1].x = 1;
+//             blks[2].y = 1; blks[2].x = 0;
+//             blks[3].y = 1; blks[3].x = 1;
+//             break;
+//         case SHAPE_H:
+//             blks[1].y = -1; blks[1].x = 0;
+//             blks[2].y = 0; blks[2].x = 1;
+//             blks[3].y = 1; blks[3].x = 0;
+//             rot_cnt = 3;
+//             break;
+//         default:
+//             ;
+//         }
+//     } else if (shape <= SHAPE_Z) {
+//         // pentominoes
+//         blk_cnt = 5;
+//         blks = malloc(blk_cnt * sizeof(coord_t));
+//         blks[0].y = 0; blks[0].x = 0;
+//         switch (shape) {
+//         case SHAPE_F:
+//             blks[1].y = -1; blks[1].x = -1;
+//             blks[2].y = -1; blks[2].x = 0;
+//             blks[3].y = 0; blks[3].x = 1;
+//             blks[4].y = 1; blks[4].x = 0;
+//             rot_cnt = 3;
+//             can_mir = 1;
+//             break;
+//         case SHAPE_I:
+//             blks[1].y = 0; blks[1].x = -2;
+//             blks[2].y = 0; blks[2].x = -1;
+//             blks[3].y = 0; blks[3].x = 1;
+//             blks[4].y = 0; blks[4].x = 2;
+//             rot_cnt = 1;
+//             break;
+//         case SHAPE_L:
+//             blks[1].y = -1; blks[1].x = 0;
+//             blks[2].y = 0; blks[2].x = -3;
+//             blks[3].y = 0; blks[3].x = -2;
+//             blks[4].y = 0; blks[4].x = -1;
+//             rot_cnt = 3;
+//             can_mir = 1;
+//             break;
+//         case SHAPE_N:
+//             blks[1].y = -1; blks[1].x = 0;
+//             blks[2].y = -1; blks[2].x = 1;
+//             blks[3].y = 0; blks[3].x = -2;
+//             blks[4].y = 0; blks[4].x = -1;
+//             rot_cnt = 3;
+//             can_mir = 1;
+//             break;
+//         case SHAPE_P:
+//             blks[1].y = -1; blks[1].x = 0;
+//             blks[2].y = -1; blks[2].x = 1;
+//             blks[3].y = 0; blks[3].x = 1;
+//             blks[4].y = 1; blks[4].x = 0;
+//             rot_cnt = 3;
+//             can_mir = 1;
+//             break;
+//         case SHAPE_T:
+//             blks[1].y = 0; blks[1].x = -1;
+//             blks[2].y = 0; blks[2].x = 1;
+//             blks[3].y = 1; blks[3].x = 0;
+//             blks[4].y = 2; blks[4].x = 0;
+//             rot_cnt = 3;
+//             break;
+//         case SHAPE_U:
+//             blks[1].y = -1; blks[1].x = -1;
+//             blks[2].y = -1; blks[2].x = 1;
+//             blks[3].y = 0; blks[3].x = -1;
+//             blks[4].y = 0; blks[4].x = 1;
+//             rot_cnt = 3;
+//             break;
+//         case SHAPE_V:
+//             blks[1].y = -1; blks[1].x = -1;
+//             blks[2].y = -1; blks[2].x = 0;
+//             blks[3].y = 0; blks[3].x = 1;
+//             blks[4].y = 1; blks[4].x = 0;
+//             rot_cnt = 3;
+//             break;
+//         case SHAPE_W:
+//             blks[1].y = -2; blks[1].x = 0;
+//             blks[2].y = -1; blks[2].x = 0;
+//             blks[3].y = 0; blks[3].x = 1;
+//             blks[4].y = 0; blks[4].x = 2;
+//             rot_cnt = 3;
+//             break;
+//         case SHAPE_X:
+//             blks[1].y = -1; blks[1].x = 0;
+//             blks[2].y = 0; blks[2].x = -1;
+//             blks[3].y = 0; blks[3].x = 1;
+//             blks[4].y = 1; blks[4].x = 0;
+//             break;
+//         case SHAPE_Y:
+//             blks[1].y = -1; blks[1].x = 0;
+//             blks[2].y = 0; blks[2].x = -2;
+//             blks[3].y = 0; blks[3].x = -1;
+//             blks[4].y = 0; blks[4].x = 1;
+//             rot_cnt = 3;
+//             can_mir = 1;
+//             break;
+//         case SHAPE_Z:
+//             blks[1].y = -1; blks[1].x = -1;
+//             blks[2].y = -1; blks[2].x = 0;
+//             blks[3].y = 1; blks[3].x = 0;
+//             blks[4].y = 1; blks[4].x = 1;
+//             rot_cnt = 1;
+//             can_mir = 1;
+//             break;
+//         default:
+//             ;
+//         }
+//     } else {
+//         free(tile);
+//         return NULL;
+//     }
+//
+//     tile->blk_cnt = blk_cnt;
+//     tile->blks = blks;
+//     tile->can_mir = can_mir;
+//     tile->rot_cnt = rot_cnt;
+//     tile->pos.y = 0; tile->pos.x = 0;
+//     return tile;
+// }
+
 tile_t *make_tile(shape_t shape)
 {
-    tile_t *tile = malloc(sizeof(tile_t));
-    int blk_cnt, can_mir = 0, rot_cnt = 0;
-    coord_t *blks;
-
-    if (shape <= SHAPE_O) {
-        // monomino
-        blk_cnt = 1;
-        blks = malloc(blk_cnt * sizeof(coord_t));
-        blks[0].y = 0; blks[0].x = 0;
-    } else if (shape <= SHAPE_R) {
-        // domino
-        blk_cnt = 2;
-        blks = malloc(blk_cnt * sizeof(coord_t));
-        blks[0].y = 0; blks[0].x = 0;
-        blks[1].y = 0; blks[1].x = 1;
-        rot_cnt = 1;
-    } else if (shape <= SHAPE_A) {
-        // trominoes
-        blk_cnt = 3;
-        blks = malloc(blk_cnt * sizeof(coord_t));
-        blks[0].y = 0; blks[0].x = 0;
-        switch (shape) {
-        case SHAPE_M:
-            blks[1].y = 0; blks[1].x = -1;
-            blks[2].y = 0; blks[2].x = 1;
-            rot_cnt = 1;
-            break;
-        case SHAPE_A:
-            blks[1].y = 0; blks[1].x = -1;
-            blks[2].y = 1; blks[2].x = 0;
-            rot_cnt = 3;
-            break;
-        default:
-            ;
-        }
-    } else if (shape <= SHAPE_H) {
-        // tetrominoes
-        blk_cnt = 4;
-        blks = malloc(blk_cnt * sizeof(coord_t));
-        blks[0].y = 0; blks[0].x = 0;
-        switch (shape) {
-        case SHAPE_E:
-            blks[1].y = 0; blks[1].x = -1;
-            blks[2].y = 0; blks[2].x = 1;
-            blks[3].y = 0; blks[3].x = 2;
-            rot_cnt = 1;
-            break;
-        case SHAPE_J:
-            blks[1].y = -2; blks[1].x = 0;
-            blks[2].y = -1; blks[2].x = 0;
-            blks[3].y = 0; blks[3].x = -1;
-            rot_cnt = 3;
-            can_mir = 1;
-            break;
-        case SHAPE_S:
-            blks[1].y = -1; blks[1].x = -1;
-            blks[2].y = 0; blks[2].x = -1;
-            blks[3].y = 1; blks[3].x = 0;
-            rot_cnt = 1;
-            can_mir = 1;
-            break;
-        case SHAPE_Q:
-            blks[1].y = 0; blks[1].x = 1;
-            blks[2].y = 1; blks[2].x = 0;
-            blks[3].y = 1; blks[3].x = 1;
-            break;
-        case SHAPE_H:
-            blks[1].y = -1; blks[1].x = 0;
-            blks[2].y = 0; blks[2].x = 1;
-            blks[3].y = 1; blks[3].x = 0;
-            rot_cnt = 3;
-            break;
-        default:
-            ;
-        }
-    } else if (shape <= SHAPE_Z) {
-        // pentominoes
-        blk_cnt = 5;
-        blks = malloc(blk_cnt * sizeof(coord_t));
-        blks[0].y = 0; blks[0].x = 0;
-        switch (shape) {
-        case SHAPE_F:
-            blks[1].y = -1; blks[1].x = -1;
-            blks[2].y = -1; blks[2].x = 0;
-            blks[3].y = 0; blks[3].x = 1;
-            blks[4].y = 1; blks[4].x = 0;
-            rot_cnt = 3;
-            can_mir = 1;
-            break;
-        case SHAPE_I:
-            blks[1].y = 0; blks[1].x = -2;
-            blks[2].y = 0; blks[2].x = -1;
-            blks[3].y = 0; blks[3].x = 1;
-            blks[4].y = 0; blks[4].x = 2;
-            rot_cnt = 1;
-            break;
-        case SHAPE_L:
-            blks[1].y = -1; blks[1].x = 0;
-            blks[2].y = 0; blks[2].x = -3;
-            blks[3].y = 0; blks[3].x = -2;
-            blks[4].y = 0; blks[4].x = -1;
-            rot_cnt = 3;
-            can_mir = 1;
-            break;
-        case SHAPE_N:
-            blks[1].y = -1; blks[1].x = 0;
-            blks[2].y = -1; blks[2].x = 1;
-            blks[3].y = 0; blks[3].x = -2;
-            blks[4].y = 0; blks[4].x = -1;
-            rot_cnt = 3;
-            can_mir = 1;
-            break;
-        case SHAPE_P:
-            blks[1].y = -1; blks[1].x = 0;
-            blks[2].y = -1; blks[2].x = 1;
-            blks[3].y = 0; blks[3].x = 1;
-            blks[4].y = 1; blks[4].x = 0;
-            rot_cnt = 3;
-            can_mir = 1;
-            break;
-        case SHAPE_T:
-            blks[1].y = 0; blks[1].x = -1;
-            blks[2].y = 0; blks[2].x = 1;
-            blks[3].y = 1; blks[3].x = 0;
-            blks[4].y = 2; blks[4].x = 0;
-            rot_cnt = 3;
-            break;
-        case SHAPE_U:
-            blks[1].y = -1; blks[1].x = -1;
-            blks[2].y = -1; blks[2].x = 1;
-            blks[3].y = 0; blks[3].x = -1;
-            blks[4].y = 0; blks[4].x = 1;
-            rot_cnt = 3;
-            break;
-        case SHAPE_V:
-            blks[1].y = -1; blks[1].x = -1;
-            blks[2].y = -1; blks[2].x = 0;
-            blks[3].y = 0; blks[3].x = 1;
-            blks[4].y = 1; blks[4].x = 0;
-            rot_cnt = 3;
-            break;
-        case SHAPE_W:
-            blks[1].y = -2; blks[1].x = 0;
-            blks[2].y = -1; blks[2].x = 0;
-            blks[3].y = 0; blks[3].x = 1;
-            blks[4].y = 0; blks[4].x = 2;
-            rot_cnt = 3;
-            break;
-        case SHAPE_X:
-            blks[1].y = -1; blks[1].x = 0;
-            blks[2].y = 0; blks[2].x = -1;
-            blks[3].y = 0; blks[3].x = 1;
-            blks[4].y = 1; blks[4].x = 0;
-            break;
-        case SHAPE_Y:
-            blks[1].y = -1; blks[1].x = 0;
-            blks[2].y = 0; blks[2].x = -2;
-            blks[3].y = 0; blks[3].x = -1;
-            blks[4].y = 0; blks[4].x = 1;
-            rot_cnt = 3;
-            can_mir = 1;
-            break;
-        case SHAPE_Z:
-            blks[1].y = -1; blks[1].x = -1;
-            blks[2].y = -1; blks[2].x = 0;
-            blks[3].y = 1; blks[3].x = 0;
-            blks[4].y = 1; blks[4].x = 1;
-            rot_cnt = 1;
-            can_mir = 1;
-            break;
-        default:
-            ;
-        }
-    } else {
-        free(tile);
+    if (shape < SHAPE_O || shape > SHAPE_Z)
         return NULL;
-    }
 
-    tile->blk_cnt = blk_cnt;
-    tile->blks = blks;
-    tile->can_mir = can_mir;
-    tile->rot_cnt = rot_cnt;
+    tile_t *tile = malloc(sizeof(tile_t));
+    tile->shape = shape;
+    tile->blk_cnt = BLK_CNT[shape];
+    tile->blks = malloc(BLK_CNT[shape] * sizeof(coord_t));
+    for (int i = 0; i < BLK_CNT[shape]; ++i) {
+        tile->blks[i].y = BLKS[shape][i].y;
+        tile->blks[i].x = BLKS[shape][i].x;
+    }
+    tile->pos.y = 0; tile->pos.x = 0;
+    tile->can_mir = CAN_MIR[shape];
+    tile->rot_cnt = ROT_CNT[shape];
     return tile;
 }
 
