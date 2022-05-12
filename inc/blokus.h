@@ -8,11 +8,11 @@
 
 typedef enum {
     // monomino
-    SHAPE_O,
-    // domino
-    SHAPE_R,
-    // trominoes
     SHAPE_M,
+    // domino
+    SHAPE_D,
+    // trominoes
+    SHAPE_R,
     SHAPE_A,
     // tetrominoes
     SHAPE_E,
@@ -36,8 +36,8 @@ typedef enum {
 } shape_t;
 
 typedef struct {
-    char y;
-    char x;
+    int y;
+    int x;
 } coord_t;
 
 struct _tile_attr {

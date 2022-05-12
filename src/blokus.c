@@ -21,7 +21,7 @@ const coord_t EDGE[4] = {
 };
 
 const struct _tile_attr TILE[SHAPE_Z + 1] = {
-    {   // SHAPE_O
+    {   // SHAPE_M
         .blks = {
             {.y = 0, .x = 0},
         },
@@ -38,7 +38,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .can_mir = 0,
         .rot_cnt = 1
     },
-    {   // SHAPE_M
+    {   // SHAPE_R
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = -1},
@@ -357,7 +357,7 @@ int place_tile(gcb_t *gcb, tile_t *tile)
 
 tile_t *make_tile(shape_t shape)
 {
-    if (shape < SHAPE_O || shape > SHAPE_Z)
+    if (shape < SHAPE_M || shape > SHAPE_Z)
         return NULL;
 
     tile_t *tile = malloc(sizeof(tile_t));
