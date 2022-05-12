@@ -36,8 +36,8 @@ typedef enum {
 } shape_t;
 
 typedef struct {
-    int y;
-    int x;
+    char y;
+    char x;
 } coord_t;
 
 typedef struct {

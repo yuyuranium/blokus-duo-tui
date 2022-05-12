@@ -95,6 +95,25 @@ int test_place(gcb_t *gcb, tile_t *tile, coord_t coord)
     return (valid)? 0 : -1;
 }
 
+int place_tile(gcb_t *gcb, tile_t *tile, coord_t coord)
+{
+    if (test_place(gcb, tile, coord) < 0)
+        return -1;
+
+    int p = gcb->turn;
+    for (int i = 0; i < tile->blk_cnt; ++i) {
+        int y = coord.y + tile->blks[i].y, x = coord.x + tile->blks[i].x;
+        int k = N_ROW * y + x;
+        gcb->map[y][x] = p;
+        gcb->next_empty[gcb->prev_empty[k]] = gcb->next_empty[k];
+        gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
+    }
+
+    gcb->hand[p][tile->shape] = 0;
+    gcb->turn = !gcb->turn;
+    return 0;
+}
+
 tile_t *make_tile(shape_t shape)
 {
     tile_t *tile = malloc(sizeof(tile_t));
@@ -325,4 +344,14 @@ int mir_tile(tile_t *tile)
     for (int i = 0; i < tile->blk_cnt; ++i)
         tile->blks[i].x *= -1;
     return 0;
+}
+
+unsigned char *cmprs_tile(tile_t *tile)
+{
+    return NULL;
+}
+
+tile_t *extr_tile(unsigned char *code)
+{
+    return NULL;
 }
