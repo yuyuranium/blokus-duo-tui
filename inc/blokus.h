@@ -40,13 +40,17 @@ typedef struct {
     char x;
 } coord_t;
 
+struct _tile_attr {
+    coord_t blks[5];
+    int blk_cnt;
+    int can_mir;
+    int rot_cnt;
+};
+
 typedef struct {
     shape_t shape;
     coord_t *blks;
     coord_t pos;
-    int blk_cnt;
-    int can_mir;
-    int rot_cnt;
 } tile_t;
 
 typedef struct {
@@ -61,10 +65,7 @@ typedef struct {
 extern const coord_t STARTING_POINT[2];
 extern const coord_t CORNER[4];
 extern const coord_t EDGE[4];
-extern const coord_t BLKS[SHAPE_Z + 1][5];
-extern const int BLK_CNT[SHAPE_Z + 1];
-extern const int CAN_MIR[SHAPE_Z + 1];
-extern const int ROT_CNT[SHAPE_Z + 1];
+extern const struct _tile_attr TILE[21];
 
 gcb_t *init_gcb();
 int test_place(gcb_t *gcb, tile_t *tile);
