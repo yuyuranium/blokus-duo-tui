@@ -5,8 +5,8 @@ SRC_DIR := src
 BUILD_DIR := build
 
 TARGETS := blokus  # Add targets here
-SOURCES := $(SRC_DIR)/$(TARGETS:=.c)
-OBJECTS := $(BUILD_DIR)/$(TARGETS:=.o)
+SOURCES := $(addprefix $(SRC_DIR)/, $(TARGETS:=.c))
+OBJECTS := $(addprefix $(BUILD_DIR)/, $(TARGETS:=.o))
 HEADERS := $(wildcard $(INC_DIR)/*.h)
 
 __dir := $(shell mkdir -p $(BUILD_DIR))
