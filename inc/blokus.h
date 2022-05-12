@@ -1,8 +1,10 @@
 #ifndef _BLOKUS_H
 #define _BLOKUS_H 
 
-#define P1 'o'
-#define P2 'x'
+#define N_ROW 14
+#define N_COL 14
+
+#define within_map(y, x) ((y) >= 0 && (y) < N_ROW && (x) >= 0 && (x) < N_COL)
 
 typedef enum {
     // monomino
@@ -34,19 +36,43 @@ typedef enum {
 } shape_t;
 
 typedef struct {
-    int x;
     int y;
+    int x;
 } coord_t;
 
 typedef struct {
     shape_t shape;
     coord_t *blks;
     int blk_cnt;
+    int can_mir;
+    int rot_cnt;
 } tile_t;
 
 typedef struct {
-    char map[14][14];
-} board_t;
+    int turn;
+    int hand[2][SHAPE_Z + 1];
+    int score[2];
+    int map[N_ROW][N_COL];
+} gcb_t;  // game control block
+
+const coord_t STARTING_POINT[2] = {
+    {.y = 0x9, .x = 0x4},
+    {.y = 0x4, .x = 0x9}
+};
+
+const coord_t CORNER[4] = {
+    {.y = -1, .x = -1},
+    {.y = -1, .x = 1},
+    {.y = 1, .x = -1},
+    {.y = 1, .x = 1},
+};
+
+const coord_t EDGE[4] = {
+    {.y = -1, .x = 0},
+    {.y = 0, .x = -1},
+    {.y = 0, .x = 1},
+    {.y = 1, .x = 0},
+};
 
 tile_t *make_tile(shape_t shape);
 int rot_tile(tile_t *tile, int theta);

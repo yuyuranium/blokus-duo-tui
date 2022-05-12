@@ -1,6 +1,74 @@
 #include "blokus.h"
 #include <stdlib.h>
 
+gcb_t *init_gcb()
+{
+    gcb_t *gcb = malloc(sizeof(gcb_t));
+    gcb->turn = 0;
+    gcb->score[0] = 0;
+    gcb->score[1] = 0;
+    for (int i = 0; i <= SHAPE_Z; ++i) {
+        gcb->hand[0][i] = 1;
+        gcb->hand[1][i] = 1;
+    }
+    for (int y = 0; y < N_ROW; ++y) {
+        for (int x = 0; x < N_COL; ++x) {
+            gcb->map[y][x] = -1;
+        }
+    }
+    return gcb;
+}
+
+int test_place(gcb_t *gcb, tile_t *tile, coord_t coord)
+{
+    int p = gcb->turn, valid = 0;
+
+    // If the player hasn't place any tiles yet
+    if (gcb->score[p] == 0) {
+        for (int i = 0; i < tile->blk_cnt; ++i) {
+            int y = coord.y + tile->blks[i].y, x = coord.x + tile->blks[i].x;
+
+            // Out of map
+            if (!within_map(y, x))
+                return -1;
+
+            // Check if covering starting point
+            if (y == STARTING_POINT[p].y && x == STARTING_POINT[p].x)
+                valid = 1;
+        }
+    } else {
+        for (int i = 0; i < tile->blk_cnt; ++i) {
+            int y = coord.y + tile->blks[i].y, x = coord.x + tile->blks[i].x;
+            if (within_map(y, x)) {
+                // Overlapping
+                if (gcb->map[y][x] != -1)
+                    return -1;
+
+                for (int j = 0; j < 4; ++j) {
+                    int ey = y + EDGE[i].y, ex = x + EDGE[i].x;
+
+                    // Edge-to-edge contact is not allowed
+                    if (within_map(ey, ex) && gcb->map[ey][ex] == p)
+                        return -1;
+                }
+
+                for (int j = 0; j < 4; ++j) {
+                    int cy = y + CORNER[i].y, cx = x + CORNER[i].x;
+
+                    // Must have at least one corner-to-corner contact
+                    if (within_map(cy, cx) && gcb->map[cy][cx] == p)
+                        valid = 1;
+                }
+
+            } else {
+                return -1;
+            }
+        }
+    }
+
+    return (valid)? 0 : -1;
+}
+
 tile_t *make_tile(shape_t shape)
 {
     tile_t *tile = malloc(sizeof(tile_t));
@@ -192,8 +260,8 @@ int rot_tile(tile_t *tile, int theta)
 
     for (int i = 0; i < tile->blk_cnt; ++i) {
         int x = tile->blks[i].x, y = tile->blks[i].y;
-        tile->blks[i].x = rot_mtx[0][0] * x + rot_mtx[0][1] * y;
         tile->blks[i].y = rot_mtx[1][0] * x + rot_mtx[1][1] * y;
+        tile->blks[i].x = rot_mtx[0][0] * x + rot_mtx[0][1] * y;
     }
     return 0;
 }
