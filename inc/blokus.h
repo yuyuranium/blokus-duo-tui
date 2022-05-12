@@ -52,6 +52,8 @@ typedef struct {
     int turn;
     int hand[2][SHAPE_Z + 1];
     int score[2];
+    int next_empty[N_ROW * N_COL];
+    int prev_empty[N_ROW * N_COL];
     int map[N_ROW][N_COL];
 } gcb_t;  // game control block
 
@@ -74,6 +76,8 @@ const coord_t EDGE[4] = {
     {.y = 1, .x = 0},
 };
 
+gcb_t *init_gcb();
+int test_place(gcb_t *gcb, tile_t *tile, coord_t coord);
 tile_t *make_tile(shape_t shape);
 int rot_tile(tile_t *tile, int theta);
 int mir_tile(tile_t *tile);

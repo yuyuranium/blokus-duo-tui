@@ -16,6 +16,12 @@ gcb_t *init_gcb()
             gcb->map[y][x] = -1;
         }
     }
+    for (int i = 0; i < 195; ++i)
+        gcb->next_empty[i] = i + 1;
+    gcb->next_empty[195] = -1;
+    for (int i = 1; i < 196; ++i)
+        gcb->prev_empty[i] = i - 1;
+    gcb->prev_empty[0] = -1;
     return gcb;
 }
 
