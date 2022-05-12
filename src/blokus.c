@@ -22,6 +22,7 @@ const coord_t EDGE[4] = {
 
 const struct _tile_attr TILE[SHAPE_Z + 1] = {
     {   // SHAPE_M
+        .alpha = 'M',
         .blks = {
             {.y = 0, .x = 0},
         },
@@ -30,6 +31,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 0
     },
     {   // SHAPE_D
+        .alpha = 'D',
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = 1},
@@ -39,6 +41,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 1
     },
     {   // SHAPE_R
+        .alpha = 'R',
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = -1},
@@ -49,6 +52,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 1
     },
     {   // SHAPE_A
+        .alpha = 'A',
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = -1},
@@ -59,6 +63,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_E
+        .alpha = 'E',
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = -1},
@@ -70,6 +75,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 1
     },
     {   // SHAPE_J
+        .alpha = 'J',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -2, .x = 0},
@@ -81,6 +87,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_S
+        .alpha = 'S',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = -1},
@@ -92,6 +99,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 1
     },
     {   // SHAPE_Q
+        .alpha = 'Q',
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = 1},
@@ -103,6 +111,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 0
     },
     {   // SHAPE_H
+        .alpha = 'H',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = 0},
@@ -114,6 +123,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_F
+        .alpha = 'F',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = -1},
@@ -126,6 +136,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_I
+        .alpha = 'I',
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = -2},
@@ -138,6 +149,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 1
     },
     {   // SHAPE_L
+        .alpha = 'L',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = 0},
@@ -150,6 +162,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_N
+        .alpha = 'N',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = 0},
@@ -162,6 +175,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_P
+        .alpha = 'P',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = 0},
@@ -174,6 +188,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_T
+        .alpha = 'T',
         .blks = {
             {.y = 0, .x = 0},
             {.y = 0, .x = -1},
@@ -186,6 +201,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_U
+        .alpha = 'U',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = -1},
@@ -198,6 +214,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_V
+        .alpha = 'V',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -2, .x = 0},
@@ -210,6 +227,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_W
+        .alpha = 'W',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = -1},
@@ -222,6 +240,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_X
+        .alpha = 'X',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = 0},
@@ -234,6 +253,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 0
     },
     {   // SHAPE_Y
+        .alpha = 'Y',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = 0},
@@ -246,6 +266,7 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
         .rot_cnt = 3
     },
     {   // SHAPE_Z
+        .alpha = 'Z',
         .blks = {
             {.y = 0, .x = 0},
             {.y = -1, .x = -1},

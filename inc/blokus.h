@@ -41,6 +41,7 @@ typedef struct {
 } coord_t;
 
 struct _tile_attr {
+    char alpha;
     coord_t blks[5];
     int blk_cnt;
     int can_mir;
