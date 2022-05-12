@@ -326,29 +326,24 @@ int test_place(gcb_t *gcb, tile_t *tile)
         for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
             int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
 
-            // Check if within map
-            if (within_map(y, x)) {
-                // Overlapping
-                if (gcb->map[y][x] != -1)
-                    return -1;
-
-                for (int j = 0; j < 4; ++j) {
-                    int ey = y + EDGE[i].y, ex = x + EDGE[i].x;
-
-                    // Edge-to-edge contact is not allowed
-                    if (within_map(ey, ex) && gcb->map[ey][ex] == p)
-                        return -1;
-                }
-
-                for (int j = 0; j < 4; ++j) {
-                    int cy = y + CORNER[i].y, cx = x + CORNER[i].x;
-
-                    // Must have at least one corner-to-corner contact
-                    if (within_map(cy, cx) && gcb->map[cy][cx] == p)
-                        valid = 1;
-                }
-            } else {
+            // Out of map or overlapping
+            if (!within_map(y, x) || gcb->map[y][x] != -1)
                 return -1;
+
+            for (int j = 0; j < 4; ++j) {
+                int ey = y + EDGE[i].y, ex = x + EDGE[i].x;
+
+                // Edge-to-edge contact is not allowed
+                if (within_map(ey, ex) && gcb->map[ey][ex] == p)
+                    return -1;
+            }
+
+            for (int j = 0; j < 4; ++j) {
+                int cy = y + CORNER[i].y, cx = x + CORNER[i].x;
+
+                // Must have at least one corner-to-corner contact
+                if (within_map(cy, cx) && gcb->map[cy][cx] == p)
+                    valid = 1;
             }
         }
     }
