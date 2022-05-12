@@ -24,7 +24,7 @@ const coord_t TILE_CURS[SHAPE_Z + 1] = {
      // SHAPE_F 
      {.y = 11, .x = 67},
      // SHAPE_I 
-     {.y = 15, .x = 37},
+     {.y = 14, .x = 37},
      // SHAPE_L 
      {.y = 2, .x = 48},
      // SHAPE_N 
@@ -69,7 +69,7 @@ const coord_t ALPHA_CURS[SHAPE_Z + 1] = {
     // SHAPE_F
     {.y = 9, .x = 67},
     // SHAPE_I
-    {.y = 14, .x = 37},
+    {.y = 13, .x = 37},
     // SHAPE_L
     {.y = 0, .x = 45},
     // SHAPE_N
@@ -94,7 +94,7 @@ const coord_t ALPHA_CURS[SHAPE_Z + 1] = {
 
 int modify_board(gcb_t *gcb)
 {
-    mvprintw(1, 0, "  1 2 3 4 5 6 7 8 9 a b c d e  │\n");
+    mvprintw(1, 0, "  0 1 2 3 4 5 6 7 8 9 a b c d  │\n");
     for (int y = 0; y < N_ROW; ++y) {
         printw("%x ", y);
         for (int x = 0; x < N_COL; ++x) {
