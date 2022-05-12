@@ -57,24 +57,9 @@ typedef struct {
     int map[N_ROW][N_COL];
 } gcb_t;  // game control block
 
-const coord_t STARTING_POINT[2] = {
-    {.y = 0x9, .x = 0x4},
-    {.y = 0x4, .x = 0x9}
-};
-
-const coord_t CORNER[4] = {
-    {.y = -1, .x = -1},
-    {.y = -1, .x = 1},
-    {.y = 1, .x = -1},
-    {.y = 1, .x = 1},
-};
-
-const coord_t EDGE[4] = {
-    {.y = -1, .x = 0},
-    {.y = 0, .x = -1},
-    {.y = 0, .x = 1},
-    {.y = 1, .x = 0},
-};
+extern const coord_t STARTING_POINT[2];
+extern const coord_t CORNER[4];
+extern const coord_t EDGE[4];
 
 gcb_t *init_gcb();
 int test_place(gcb_t *gcb, tile_t *tile, coord_t coord);

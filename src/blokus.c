@@ -1,6 +1,25 @@
 #include "blokus.h"
 #include <stdlib.h>
 
+const coord_t STARTING_POINT[2] = {
+    {.y = 0x9, .x = 0x4},
+    {.y = 0x4, .x = 0x9}
+};
+
+const coord_t CORNER[4] = {
+    {.y = -1, .x = -1},
+    {.y = -1, .x = 1},
+    {.y = 1, .x = -1},
+    {.y = 1, .x = 1},
+};
+
+const coord_t EDGE[4] = {
+    {.y = -1, .x = 0},
+    {.y = 0, .x = -1},
+    {.y = 0, .x = 1},
+    {.y = 1, .x = 0},
+};
+
 gcb_t *init_gcb()
 {
     gcb_t *gcb = malloc(sizeof(gcb_t));
