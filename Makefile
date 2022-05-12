@@ -4,10 +4,9 @@ INC_DIR := inc
 SRC_DIR := src
 BUILD_DIR := build
 
-TARGETS := blokus  # Add targets here
-SOURCES := $(addprefix $(SRC_DIR)/, $(TARGETS:=.c))
-OBJECTS := $(addprefix $(BUILD_DIR)/, $(TARGETS:=.o))
 HEADERS := $(wildcard $(INC_DIR)/*.h)
+SOURCES := $(wildcard $(SRC_DIR)/*.c)
+OBJECTS := $(SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
 __dir := $(shell mkdir -p $(BUILD_DIR))
 
@@ -17,7 +16,7 @@ LDFLAGS = -lpthread
 
 all: $(OBJECTS)
 
-$(OBJECTS): $(SOURCES) $(HEADERS)
+$(OBJECTS): $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
 	@$(CC) -o $@ -c $< $(CFLAGS)
 	@echo [CXX] $< "-> .o"
 
