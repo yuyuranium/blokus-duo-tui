@@ -92,7 +92,7 @@ const coord_t ALPHA_CURS[SHAPE_Z + 1] = {
     {.y = 4, .x = 59},
 };
 
-int modify_board(gcb_t *gcb)
+int render_board(gcb_t *gcb)
 {
     mvprintw(1, 0, "  0 1 2 3 4 5 6 7 8 9 a b c d  │\n");
     for (int y = 0; y < N_ROW; ++y) {
@@ -106,7 +106,7 @@ int modify_board(gcb_t *gcb)
     return 0;
 }
 
-int modify_tiles(gcb_t *gcb, int player)
+int render_tiles(gcb_t *gcb, int player)
 {
     for (int i = 0; i < SHAPE_Z + 1; ++i) {
         if (gcb->hand[player][i]) {
@@ -127,5 +127,25 @@ int modify_tiles(gcb_t *gcb, int player)
     }
     return 0; 
 }
-int modify_chosen_tile(gcb_t *gcb);
-int modify_message_log(gcb_t *gcb);
+
+int render_chosen_tile(tile_t *tile)
+{
+    for (int i = 17; i <= 25; ++i) {
+        mvprintw(i, 0, "│                  │");
+    }
+
+    start_color();
+    init_pair(CYAN_PAIR, COLOR_CYAN, COLOR_BLACK);
+    attron(COLOR_PAIR(CYAN_PAIR));
+    mvprintw(21, 10, "■");
+    attroff(COLOR_PAIR(CYAN_PAIR));
+    
+    for (int i = 1; i < TILE[tile->shape].blk_cnt; ++i) {
+        int y = 21 + tile->blks[i].y;
+        int x = 10 + tile->blks[i].x * 2;
+        mvprintw(y, x, "■");
+    }
+    return 0;
+}
+
+int render_message_log(gcb_t *gcb);
