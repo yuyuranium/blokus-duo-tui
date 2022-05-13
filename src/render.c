@@ -4,93 +4,51 @@
 #include <string.h>
 
 const coord_t TILE_CURS[SHAPE_Z + 1] = {
-     // SHAPE_O 
-     {.y = 15, .x = 70},
-     // SHAPE_R 
-     {.y = 15, .x = 62},
-     // SHAPE_M 
-     {.y = 15, .x = 55},
-     // SHAPE_A 
-     {.y = 14, .x = 49},
-     // SHAPE_E 
-     {.y = 2, .x = 37},
-     // SHAPE_J 
-     {.y = 7, .x = 37},
-     // SHAPE_S 
-     {.y = 6, .x = 42},
-     // SHAPE_Q 
-     {.y = 10, .x = 40},
-     // SHAPE_H 
-     {.y = 11, .x = 35},
-     // SHAPE_F 
-     {.y = 11, .x = 69},
-     // SHAPE_I 
-     {.y = 14, .x = 39},
-     // SHAPE_L 
-     {.y = 2, .x = 50},
-     // SHAPE_N 
-     {.y = 2, .x = 68},
-     // SHAPE_P 
-     {.y = 6, .x = 46},
-     // SHAPE_T 
-     {.y = 10, .x = 62},
-     // SHAPE_U 
-     {.y = 11, .x = 48},
-     // SHAPE_V 
-     {.y = 7, .x = 52},
-     // SHAPE_W 
-     {.y = 11, .x = 56},
-     // SHAPE_X 
-     {.y = 6, .x = 68},
-     // SHAPE_Y 
-     {.y = 2, .x = 58},
-     // SHAPE_Z 
-     {.y = 6, .x = 61},
+    {.y = 15, .x = 70},  // SHAPE_O 
+    {.y = 15, .x = 62},  // SHAPE_R 
+    {.y = 15, .x = 55},  // SHAPE_M 
+    {.y = 14, .x = 49},  // SHAPE_A 
+    {.y = 2, .x = 37},   // SHAPE_E 
+    {.y = 7, .x = 37},   // SHAPE_J 
+    {.y = 6, .x = 42},   // SHAPE_S 
+    {.y = 10, .x = 40},  // SHAPE_Q 
+    {.y = 11, .x = 35},  // SHAPE_H 
+    {.y = 11, .x = 69},  // SHAPE_F 
+    {.y = 14, .x = 39},  // SHAPE_I 
+    {.y = 2, .x = 50},   // SHAPE_L 
+    {.y = 2, .x = 68},   // SHAPE_N 
+    {.y = 6, .x = 46},   // SHAPE_P 
+    {.y = 10, .x = 62},  // SHAPE_T 
+    {.y = 11, .x = 48},  // SHAPE_U 
+    {.y = 7, .x = 52},   // SHAPE_V 
+    {.y = 11, .x = 56},  // SHAPE_W 
+    {.y = 6, .x = 68},   // SHAPE_X 
+    {.y = 2, .x = 58},   // SHAPE_Y 
+    {.y = 6, .x = 61},   // SHAPE_Z 
 };
 
 const coord_t ALPHA_CURS[SHAPE_Z + 1] = {
-    // SHAPE_O
-    {.y = 14, .x = 70},
-    // SHAPE_D
-    {.y = 14, .x = 63},
-    // SHAPE_M
-    {.y = 14, .x = 55},
-    // SHAPE_A
-    {.y = 13, .x = 48},
-    // SHAPE_E
-    {.y = 0, .x = 38},
-    // SHAPE_J
-    {.y = 4, .x = 36},
-    // SHAPE_S
-    {.y = 4, .x = 41},
-    // SHAPE_Q
-    {.y = 9, .x = 41},
-    // SHAPE_H
-    {.y = 9, .x = 36},
-    // SHAPE_F
-    {.y = 9, .x = 69},
-    // SHAPE_I
-    {.y = 13, .x = 39},
-    // SHAPE_L
-    {.y = 0, .x = 47},
-    // SHAPE_N
-    {.y = 0, .x = 67},
-    // SHAPE_P
-    {.y = 4, .x = 47},
-    // SHAPE_T
-    {.y = 9, .x = 62},
-    // SHAPE_U
-    {.y = 9, .x = 48},
-    // SHAPE_V
-    {.y = 4, .x = 54},
-    // SHAPE_W
-    {.y = 9, .x = 56},
-    // SHAPE_X
-    {.y = 4, .x = 68},
-    // SHAPE_Y
-    {.y = 0, .x = 57},
-    // SHAPE_Z
-    {.y = 4, .x = 61},
+    {.y = 14, .x = 70},  // SHAPE_O
+    {.y = 14, .x = 63},  // SHAPE_D
+    {.y = 14, .x = 55},  // SHAPE_M
+    {.y = 13, .x = 48},  // SHAPE_A
+    {.y = 0, .x = 38},   // SHAPE_E
+    {.y = 4, .x = 36},   // SHAPE_J
+    {.y = 4, .x = 41},   // SHAPE_S
+    {.y = 9, .x = 41},   // SHAPE_Q
+    {.y = 9, .x = 36},   // SHAPE_H
+    {.y = 9, .x = 69},   // SHAPE_F
+    {.y = 13, .x = 39},  // SHAPE_I
+    {.y = 0, .x = 47},   // SHAPE_L
+    {.y = 0, .x = 67},   // SHAPE_N
+    {.y = 4, .x = 47},   // SHAPE_P
+    {.y = 9, .x = 62},   // SHAPE_T
+    {.y = 9, .x = 48},   // SHAPE_U
+    {.y = 4, .x = 54},   // SHAPE_V
+    {.y = 9, .x = 56},   // SHAPE_W
+    {.y = 4, .x = 68},   // SHAPE_X
+    {.y = 0, .x = 57},   // SHAPE_Y
+    {.y = 4, .x = 61},   // SHAPE_Z
 };
 
 int render_board(gcb_t *gcb)
