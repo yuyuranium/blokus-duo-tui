@@ -1,6 +1,7 @@
 #include "blokus.h"
 #include "render.h"
 #include <ncurses.h>
+#include <string.h>
 
 const coord_t TILE_CURS[SHAPE_Z + 1] = {
      // SHAPE_O 
@@ -150,4 +151,28 @@ int render_chosen_tile(tile_t *tile)
     return 0;
 }
 
-int render_message_log(gcb_t *gcb);
+int render_message_log(char *msg[6], int len[6])
+{
+    mvprintw(17, 23, "╔══════════════════════════════════════════════════════╗");
+    for (int i = 0; i < 6; ++i) {
+        mvprintw(i + 18, 23, "║ %s", msg[i]);
+        for (int j = 0; j < 53 - len[i]; ++j) {
+            printw(" ");
+        } 
+        printw("║");
+    }
+    mvprintw(24, 23, "╚══════════════════════════════════════════════════════╝");
+    mvprintw(25, 23, ">                                                      ");
+    move(25, 25);
+    return 0;
+}
+
+int shift_msg(char *msg[6], int len[6])
+{
+    for (int i = 0; i < 5; ++i) {
+        strncpy(msg[i], msg[i + 1], len[i + 1]);
+        len[i] = len[i + 1];
+        msg[i][len[i]] = '\0';
+    }
+    return 0;
+}
