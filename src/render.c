@@ -130,9 +130,11 @@ int render_tiles(gcb_t *gcb, int player)
 
 int render_chosen_tile(tile_t *tile)
 {
-    for (int i = 17; i <= 25; ++i) {
+    mvprintw(17, 0, "┌──────────────────┐");
+    for (int i = 18; i <= 24; ++i) {
         mvprintw(i, 0, "│                  │");
     }
+    mvprintw(25, 0, "└──────────────────┘");
 
     start_color();
     init_pair(CYAN_PAIR, COLOR_CYAN, COLOR_BLACK);
