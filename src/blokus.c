@@ -280,15 +280,16 @@ const struct _tile_attr TILE[SHAPE_Z + 1] = {
     },
 };
 
-gcb_t *init_gcb()
+gcb_t *init_gcb(int turn)
 {
     gcb_t *gcb = malloc(sizeof(gcb_t));
-    gcb->turn = 0;
+    gcb->turn = turn;
+    gcb->sel_shape = -1;
     gcb->score[0] = 0;
     gcb->score[1] = 0;
-    for (int i = 0; i <= SHAPE_Z; ++i) {
-        gcb->hand[0][i] = 1;
-        gcb->hand[1][i] = 1;
+    for (int s = 0; s <= SHAPE_Z; ++s) {
+        gcb->hand[0][s] = make_tile(s);
+        gcb->hand[1][s] = make_tile(s);
     }
     for (int y = 0; y < N_ROW; ++y) {
         for (int x = 0; x < N_COL; ++x) {
@@ -351,12 +352,20 @@ int test_place(gcb_t *gcb, tile_t *tile)
     return (valid)? 0 : -1;
 }
 
-int place_tile(gcb_t *gcb, tile_t *tile)
+tile_t *sel_tile(gcb_t *gcb, int shape)
 {
+    gcb->sel_shape = shape;
+    return gcb->hand[gcb->turn][gcb->sel_shape];
+}
+
+int update(gcb_t *gcb, unsigned char *code)
+{
+    int p = gcb->turn;
+    tile_t *tile = code ? decode_tile(code) : gcb->hand[p][gcb->sel_shape];
+
     if (test_place(gcb, tile) < 0)
         return -1;
 
-    int p = gcb->turn;
     coord_t pos = tile->pos;
     for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
         int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
@@ -366,8 +375,10 @@ int place_tile(gcb_t *gcb, tile_t *tile)
         gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
     }
 
-    gcb->hand[p][tile->shape] = 0;
     gcb->turn = !gcb->turn;
+    gcb->sel_shape = -1;
+    gcb->score[p] += TILE[tile->shape].blk_cnt;
+    free(tile);
     return 0;
 }
 
@@ -432,12 +443,12 @@ int mir_tile(tile_t *tile)
     return 0;
 }
 
-unsigned char *cmprs_tile(tile_t *tile)
+int encode_tile(tile_t *tile, unsigned char *code_out)
 {
-    return NULL;
+    return 0;
 }
 
-tile_t *extr_tile(unsigned char *code)
+tile_t *decode_tile(unsigned char *code)
 {
     return NULL;
 }
