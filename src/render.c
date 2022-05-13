@@ -5,99 +5,99 @@
 
 const coord_t TILE_CURS[SHAPE_Z + 1] = {
      // SHAPE_O 
-     {.y = 15, .x = 68},
+     {.y = 15, .x = 70},
      // SHAPE_R 
-     {.y = 15, .x = 60},
+     {.y = 15, .x = 62},
      // SHAPE_M 
-     {.y = 15, .x = 53},
+     {.y = 15, .x = 55},
      // SHAPE_A 
-     {.y = 14, .x = 47},
+     {.y = 14, .x = 49},
      // SHAPE_E 
-     {.y = 2, .x = 35},
+     {.y = 2, .x = 37},
      // SHAPE_J 
-     {.y = 7, .x = 35},
+     {.y = 7, .x = 37},
      // SHAPE_S 
-     {.y = 6, .x = 40},
+     {.y = 6, .x = 42},
      // SHAPE_Q 
-     {.y = 10, .x = 38},
+     {.y = 10, .x = 40},
      // SHAPE_H 
-     {.y = 11, .x = 33},
+     {.y = 11, .x = 35},
      // SHAPE_F 
-     {.y = 11, .x = 67},
+     {.y = 11, .x = 69},
      // SHAPE_I 
-     {.y = 14, .x = 37},
+     {.y = 14, .x = 39},
      // SHAPE_L 
-     {.y = 2, .x = 48},
+     {.y = 2, .x = 50},
      // SHAPE_N 
-     {.y = 2, .x = 66},
+     {.y = 2, .x = 68},
      // SHAPE_P 
-     {.y = 6, .x = 44},
+     {.y = 6, .x = 46},
      // SHAPE_T 
-     {.y = 10, .x = 60},
+     {.y = 10, .x = 62},
      // SHAPE_U 
-     {.y = 11, .x = 46},
+     {.y = 11, .x = 48},
      // SHAPE_V 
-     {.y = 7, .x = 50},
+     {.y = 7, .x = 52},
      // SHAPE_W 
-     {.y = 11, .x = 54},
+     {.y = 11, .x = 56},
      // SHAPE_X 
-     {.y = 6, .x = 66},
+     {.y = 6, .x = 68},
      // SHAPE_Y 
-     {.y = 2, .x = 56},
+     {.y = 2, .x = 58},
      // SHAPE_Z 
-     {.y = 6, .x = 59},
+     {.y = 6, .x = 61},
 };
 
 const coord_t ALPHA_CURS[SHAPE_Z + 1] = {
     // SHAPE_O
-    {.y = 14, .x = 68},
+    {.y = 14, .x = 70},
     // SHAPE_D
-    {.y = 14, .x = 61},
+    {.y = 14, .x = 63},
     // SHAPE_M
-    {.y = 14, .x = 53},
+    {.y = 14, .x = 55},
     // SHAPE_A
-    {.y = 13, .x = 46},
+    {.y = 13, .x = 48},
     // SHAPE_E
-    {.y = 0, .x = 36},
+    {.y = 0, .x = 38},
     // SHAPE_J
-    {.y = 4, .x = 34},
+    {.y = 4, .x = 36},
     // SHAPE_S
-    {.y = 4, .x = 39},
+    {.y = 4, .x = 41},
     // SHAPE_Q
-    {.y = 9, .x = 39},
+    {.y = 9, .x = 41},
     // SHAPE_H
-    {.y = 9, .x = 34},
+    {.y = 9, .x = 36},
     // SHAPE_F
-    {.y = 9, .x = 67},
+    {.y = 9, .x = 69},
     // SHAPE_I
-    {.y = 13, .x = 37},
+    {.y = 13, .x = 39},
     // SHAPE_L
-    {.y = 0, .x = 45},
+    {.y = 0, .x = 47},
     // SHAPE_N
-    {.y = 0, .x = 65},
+    {.y = 0, .x = 67},
     // SHAPE_P
-    {.y = 4, .x = 45},
+    {.y = 4, .x = 47},
     // SHAPE_T
-    {.y = 9, .x = 60},
+    {.y = 9, .x = 62},
     // SHAPE_U
-    {.y = 9, .x = 46},
+    {.y = 9, .x = 48},
     // SHAPE_V
-    {.y = 4, .x = 52},
+    {.y = 4, .x = 54},
     // SHAPE_W
-    {.y = 9, .x = 54},
+    {.y = 9, .x = 56},
     // SHAPE_X
-    {.y = 4, .x = 66},
+    {.y = 4, .x = 68},
     // SHAPE_Y
-    {.y = 0, .x = 55},
+    {.y = 0, .x = 57},
     // SHAPE_Z
-    {.y = 4, .x = 59},
+    {.y = 4, .x = 61},
 };
 
 int render_board(gcb_t *gcb)
 {
-    mvprintw(1, 0, "  0 1 2 3 4 5 6 7 8 9 a b c d  │\n");
+    mvprintw(1, 0, "   0 1 2 3 4 5 6 7 8 9 a b c d  │\n");
     for (int y = 0; y < N_ROW; ++y) {
-        printw("%x ", y);
+        printw(" %x ", y);
         for (int x = 0; x < N_COL; ++x) {
             printw("%s ", (gcb->map[y][x] == -1)? "·" :
                           (gcb->map[y][x] == 0)? "□" : "■"); 
