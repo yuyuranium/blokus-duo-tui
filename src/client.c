@@ -97,7 +97,9 @@ int positioning_handler(int c, rcb_t *rcb)
         case 'M':
            mir_tile(chosen);
            break;
-        case 27:  // ESC
+        case KEY_BACKSPACE:
+        case 'q':
+        case 'Q':
            recover_board_preview(rcb); 
            rcb->state--;
            return 0;
