@@ -51,6 +51,22 @@ const coord_t ALPHA_CURS[SHAPE_Z + 1] = {
     {.y = 4, .x = 61},   // SHAPE_Z
 };
 
+const shape_t tile_relation[4][6] = {
+    {SHAPE_E, SHAPE_E, SHAPE_L, SHAPE_Y, SHAPE_Y, SHAPE_N},
+    {SHAPE_J, SHAPE_S, SHAPE_P, SHAPE_V, SHAPE_Z, SHAPE_X},
+    {SHAPE_H, SHAPE_Q, SHAPE_U, SHAPE_W, SHAPE_T, SHAPE_F},
+    {SHAPE_I, SHAPE_I, SHAPE_A, SHAPE_R, SHAPE_D, SHAPE_M}
+};
+
+int init_all_colors() {
+    start_color();
+    init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
+    init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
+    init_pair(YELLOW_PAIR, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(CYAN_PAIR, COLOR_CYAN, COLOR_BLACK);
+    return 0;
+}
+
 int render_board(gcb_t *gcb)
 {
     mvprintw(1, 0, "   0 1 2 3 4 5 6 7 8 9 a b c d  │\n");
@@ -62,6 +78,53 @@ int render_board(gcb_t *gcb)
         }
         printw(" │\n");
     }
+    return 0;
+}
+    
+int render_board_preview(rcb_t *rcb)
+{
+    gcb_t *gcb = rcb->gcb;
+    tile_t *tile = rcb->chosen;
+    int has_conflict = 0;
+    for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
+        int blk_x = tile->pos.x + tile->blks[i].x;
+        int blk_y = tile->pos.y + tile->blks[i].y;
+        if (gcb->map[blk_y][blk_x] != -1) {  // has block on such pos
+            has_conflict = 1; 
+        }
+    }
+    
+    start_color();
+    init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
+    init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
+    if (has_conflict) {
+        attron(COLOR_PAIR(RED_PAIR));
+    } else {
+        attron(COLOR_PAIR(GREEN_PAIR));
+    }
+    for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
+        int blk_x = tile->pos.x + tile->blks[i].x;
+        int blk_y = tile->pos.y + tile->blks[i].y;
+        mvprintw(blk_y + 2, blk_x * 2 + 3, "■");
+    }
+    if (has_conflict) {
+        attroff(COLOR_PAIR(RED_PAIR));
+    } else {
+        attroff(COLOR_PAIR(GREEN_PAIR));
+    }
+    return 0;
+}
+
+int recover_board_preview(rcb_t *rcb)
+{
+    gcb_t *gcb = rcb->gcb;
+    tile_t *tile = rcb->chosen;
+    for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
+        int blk_x = tile->pos.x + tile->blks[i].x;
+        int blk_y = tile->pos.y + tile->blks[i].y;
+        mvprintw(blk_y + 2, blk_x * 2 + 3, (gcb->map[blk_y][blk_x] == -1)? "·" : 
+                               (gcb->map[blk_y][blk_x] == 0)? "□" : "■");
+    }  
     return 0;
 }
 
@@ -87,6 +150,38 @@ int render_tiles(gcb_t *gcb, int player)
     return 0; 
 }
 
+int render_tile_preview(gcb_t *gcb, shape_t shape)
+{
+    start_color();
+    init_pair(YELLOW_PAIR, COLOR_YELLOW, COLOR_BLACK);
+    if (!gcb->hand[0][shape]) {
+        return -1;
+    }
+    attron(COLOR_PAIR(YELLOW_PAIR));
+    mvprintw(ALPHA_CURS[shape].y, ALPHA_CURS[shape].x, "%c", TILE[shape].alpha);
+    for (int j = 0; j < TILE[shape].blk_cnt; ++j) {
+        mvprintw(TILE_CURS[shape].y + TILE[shape].blks[j].y, 
+                 TILE_CURS[shape].x + TILE[shape].blks[j].x * 2,
+                 "■");
+    }
+    attroff(COLOR_PAIR(YELLOW_PAIR));
+    return 0;
+}
+
+int recover_tile_preview(gcb_t *gcb, shape_t shape)
+{
+    if (!gcb->hand[0][shape]) {
+        return -1;
+    }
+    mvprintw(ALPHA_CURS[shape].y, ALPHA_CURS[shape].x, "%c", TILE[shape].alpha);
+    for (int j = 0; j < TILE[shape].blk_cnt; ++j) {
+        mvprintw(TILE_CURS[shape].y + TILE[shape].blks[j].y, 
+                 TILE_CURS[shape].x + TILE[shape].blks[j].x * 2,
+                 "■");
+    }
+    return 0;
+}
+
 int render_chosen_tile(tile_t *tile)
 {
     mvprintw(17, 0, " ╭─────────────────╮");
@@ -95,8 +190,6 @@ int render_chosen_tile(tile_t *tile)
     }
     mvprintw(25, 0, " ╰─────────────────╯");
 
-    start_color();
-    init_pair(CYAN_PAIR, COLOR_CYAN, COLOR_BLACK);
     attron(COLOR_PAIR(CYAN_PAIR));
     mvprintw(21, 10, "■");
     attroff(COLOR_PAIR(CYAN_PAIR));
