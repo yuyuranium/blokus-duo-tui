@@ -1,6 +1,6 @@
-#include "../inc/blokus.h"
-#include "../inc/render.h"
-#include "../inc/client.h"
+#include "inc/blokus.h"
+#include "inc/render.h"
+#include "inc/client.h"
 #include <stdlib.h>
 #include <ncurses.h>
 #include <locale.h>
