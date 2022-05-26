@@ -17,9 +17,11 @@ int main() {
     
     gcb_t* gcb = init_gcb(0);
     char *strs[7];
-    int str_len[7] = {0};
+    int *colors[7];
     for (int i = 0; i < 7; ++i) {
         strs[i] = malloc(sizeof(char) * 70);
+        colors[i] = malloc(sizeof(int));
+        *colors[i] = 0; 
     }
     
     rcb_t *rcb = malloc(sizeof(rcb_t));
@@ -31,7 +33,7 @@ int main() {
     
     render_board(gcb);
     render_tiles(gcb, rcb->render_player);
-    render_message_log(strs, str_len);
+    render_message_log(strs, colors);
     render_tile_preview(gcb, SHAPE_E);
     
     coord_t *coord = malloc(sizeof(coord_t));
@@ -46,7 +48,10 @@ int main() {
                 choose_tile_handler(c, rcb, coord);
                 break;
             case S_POSITIONING:
-                positioning_handler(c, rcb);
+                positioning_handler(c, rcb, strs, colors);
+                break;
+            case S_PLACING:
+                placing_handler(c, rcb, strs, colors);
                 break;
         }
     } while (1);

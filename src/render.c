@@ -74,7 +74,7 @@ int render_board(gcb_t *gcb)
         printw(" %x ", y);
         for (int x = 0; x < N_COL; ++x) {
             printw("%s ", (gcb->map[y][x] == -1)? "·" :
-                          (gcb->map[y][x] == 0)? "□" : "■"); 
+                          (gcb->map[y][x])? "□" : "■"); 
         }
         printw(" │\n");
     }
@@ -123,7 +123,7 @@ int recover_board_preview(rcb_t *rcb)
         int blk_x = tile->pos.x + tile->blks[i].x;
         int blk_y = tile->pos.y + tile->blks[i].y;
         mvprintw(blk_y + 2, blk_x * 2 + 3, (gcb->map[blk_y][blk_x] == -1)? "·" : 
-                               (gcb->map[blk_y][blk_x] == 0)? "□" : "■");
+                                           (gcb->map[blk_y][blk_x])? "□" : "■");
     }  
     return 0;
 }
@@ -182,26 +182,35 @@ int recover_tile_preview(gcb_t *gcb, shape_t shape)
     return 0;
 }
 
-int render_message_log(char *msg[7], int len[7])
+int render_message_log(char *msg[7], int *color[7])
 {
+    start_color();
+    init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
+    init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
+    init_pair(YELLOW_PAIR, COLOR_YELLOW, COLOR_BLACK);
+    
     mvprintw(17, 0, "╔════════════════════════════════════════════════════════════════════════╗");
     for (int i = 0; i < 7; ++i) {
-        mvprintw(i + 18, 0, "║ %s", msg[i]);
-        for (int j = 0; j < 71 - len[i]; ++j) {
+        mvprintw(i + 18, 0, "║ ");
+        attron(*color[i]);
+        mvprintw(i + 18, 2, "%s", msg[i]);
+        for (int j = 0; j < 71 - strlen(msg[i]); ++j) {
             printw(" ");
         } 
+        attroff(*color[i]);
         printw("║");
     }
     mvprintw(25, 0, "╚════════════════════════════════════════════════════════════════════════╝");
     return 0;
 }
 
-int shift_msg(char *msg[7], int len[7])
+int shift_msg(char *msg[7], int *color[7])
 {
     for (int i = 0; i < 6; ++i) {
-        strncpy(msg[i], msg[i + 1], len[i + 1]);
-        len[i] = len[i + 1];
-        msg[i][len[i]] = '\0';
+        strncpy(msg[i], msg[i + 1], strlen(msg[i + 1]));
+        msg[i][strlen(msg[i + 1])] = '\0';
+        *color[i] = *color[i + 1];
     }
+    *color[6] = 0;
     return 0;
 }

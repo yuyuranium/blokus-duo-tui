@@ -2,6 +2,7 @@
 #include "blokus.h"
 #include <ncurses.h>
 #include <stdlib.h>
+#include <string.h>
 
 int choose_tile_handler(int c, rcb_t *rcb, coord_t *coord)
 {
@@ -58,7 +59,7 @@ int choose_tile_handler(int c, rcb_t *rcb, coord_t *coord)
     return 0;
 }
 
-int positioning_handler(int c, rcb_t *rcb)
+int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
     recover_board_preview(rcb);
     tile_t* chosen = rcb->chosen;
@@ -111,6 +112,10 @@ int positioning_handler(int c, rcb_t *rcb)
             return 0;
         case ' ': {
              rcb->state++;
+             shift_msg(msg, color);
+             sprintf(msg[6], "Do you want to place at (%x, %x)? (Y/n)",
+                     chosen->pos.x, chosen->pos.y);
+             render_message_log(msg, color);
              break;
         }
     }
@@ -137,5 +142,45 @@ int positioning_handler(int c, rcb_t *rcb)
         }
     }
     render_board_preview(rcb);
+    return 0;
+}
+int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
+{
+    switch (c) {
+        case 'y':
+        case 'Y':
+        case KEY_ENTER: {
+            int valid = can_place(rcb->gcb);
+            if (!valid) {
+                shift_msg(msg, color);
+                sprintf(msg[6], "[Error] Invalid position"); 
+                *color[6] = RED_PAIR;
+                render_message_log(msg, color);
+            }
+            int update_status = update(rcb->gcb, 0);
+            if (update_status < 0) {
+                shift_msg(msg, color);
+                sprintf(msg[6], "[Error] Board update failed"); 
+                *color[6] = RED_PAIR;
+                render_message_log(msg, color);
+                rcb->state = S_POSITIONING;
+                break;
+            }
+            render_board(rcb->gcb);
+            render_tiles(rcb->gcb, 0);
+            rcb->state = S_CHOOSE_TILE;
+            break;
+        }
+        case 'q':
+        case 'n':
+        case 'N':
+            shift_msg(msg, color);
+            sprintf(msg[6], "Tile placement canceled"); 
+            *color[6] = YELLOW_PAIR;
+            render_message_log(msg, color);
+            rcb->state = S_POSITIONING;
+            break;
+            
+    } 
     return 0;
 }
