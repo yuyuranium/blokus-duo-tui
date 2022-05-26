@@ -182,25 +182,23 @@ int recover_tile_preview(gcb_t *gcb, shape_t shape)
     return 0;
 }
 
-int render_message_log(char *msg[6], int len[6])
+int render_message_log(char *msg[7], int len[7])
 {
-    mvprintw(17, 23, "╔══════════════════════════════════════════════════════╗");
-    for (int i = 0; i < 6; ++i) {
-        mvprintw(i + 18, 23, "║ %s", msg[i]);
-        for (int j = 0; j < 53 - len[i]; ++j) {
+    mvprintw(17, 0, "╔════════════════════════════════════════════════════════════════════════╗");
+    for (int i = 0; i < 7; ++i) {
+        mvprintw(i + 18, 0, "║ %s", msg[i]);
+        for (int j = 0; j < 71 - len[i]; ++j) {
             printw(" ");
         } 
         printw("║");
     }
-    mvprintw(24, 23, "╚══════════════════════════════════════════════════════╝");
-    mvprintw(25, 23, ">                                                      ");
-    move(25, 25);
+    mvprintw(25, 0, "╚════════════════════════════════════════════════════════════════════════╝");
     return 0;
 }
 
-int shift_msg(char *msg[6], int len[6])
+int shift_msg(char *msg[7], int len[7])
 {
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 6; ++i) {
         strncpy(msg[i], msg[i + 1], len[i + 1]);
         len[i] = len[i + 1];
         msg[i][len[i]] = '\0';

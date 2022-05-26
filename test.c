@@ -16,10 +16,10 @@ int main() {
     curs_set(0);
     
     gcb_t* gcb = init_gcb(0);
-    char *strs[6];
-    int str_len[6] = {0};
-    for (int i = 0; i < 6; ++i) {
-        strs[i] = malloc(sizeof(char) * 54);
+    char *strs[7];
+    int str_len[7] = {0};
+    for (int i = 0; i < 7; ++i) {
+        strs[i] = malloc(sizeof(char) * 70);
     }
     
     rcb_t *rcb = malloc(sizeof(rcb_t));
@@ -31,7 +31,6 @@ int main() {
     
     render_board(gcb);
     render_tiles(gcb, rcb->render_player);
-    render_chosen_tile(tile);
     render_message_log(strs, str_len);
     render_tile_preview(gcb, SHAPE_E);
     
