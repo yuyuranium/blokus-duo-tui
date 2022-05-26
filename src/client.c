@@ -155,7 +155,7 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
     switch (c) {
     case 'y':
     case 'Y':
-    case KEY_ENTER: {
+    case 10: {
         int valid = can_place(rcb->gcb);
         shift_msg(msg, color);
         if (!valid) {
