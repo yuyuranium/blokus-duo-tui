@@ -69,17 +69,20 @@ int init_all_colors() {
 
 int render_board(gcb_t *gcb)
 {
+    mvprintw(11, 11, "+");
+    mvprintw(6, 21, "+");
     mvprintw(1, 0, "   0 1 2 3 4 5 6 7 8 9 a b c d  │\n");
     for (int y = 0; y < N_ROW; ++y) {
         printw(" %x ", y);
         for (int x = 0; x < N_COL; ++x) {
-            printw("%s ", (gcb->map[y][x] == -1)? "·" :
-                          (gcb->map[y][x])? "□" : "■"); 
+            if (gcb->map[y][x] != -1) {
+                printw("%s ", (gcb->map[y][x])? "□" : "■"); 
+            } else {
+                printw("%s ", (((y == 4 && x == 9) || (y == 9 && x == 4)))? "+" : "·"); 
+            }
         }
         printw(" │\n");
     }
-    mvprintw(11, 11, "+");
-    mvprintw(6, 21, "+");
     return 0;
 }
     
@@ -124,8 +127,13 @@ int recover_board_preview(rcb_t *rcb)
     for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
         int blk_x = tile->pos.x + tile->blks[i].x;
         int blk_y = tile->pos.y + tile->blks[i].y;
-        mvprintw(blk_y + 2, blk_x * 2 + 3, (gcb->map[blk_y][blk_x] == -1)? "·" : 
-                                           (gcb->map[blk_y][blk_x])? "□" : "■");
+        if (gcb->map[blk_y][blk_x] != -1) {
+            mvprintw(blk_y + 2, blk_x * 2 + 3, "%s ",
+                    (gcb->map[blk_y][blk_x])? "□" : "■"); 
+        } else {
+            mvprintw(blk_y + 2, blk_x * 2 + 3, "%s ",
+                    (((blk_y == 4 && blk_x == 9) || (blk_y == 9 && blk_x == 4)))? "+" : "·"); 
+        }
     }  
     return 0;
 }
