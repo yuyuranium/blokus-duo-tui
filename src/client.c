@@ -126,17 +126,23 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
          || chosen->pos.y + chosen->blks[i].y < 0) {
             chosen->pos = tmp_pos;
             if (operation) {
+                shift_msg(msg, color);
                 switch (operation) {
                     case 1:
+                        sprintf(msg[6], "[Warning] You cannot do rotation in this position");
                         rot_tile(chosen, 270);
                         break;
                     case 2:
-                        rot_tile(chosen, 270);
+                        sprintf(msg[6], "[Warning] You cannot do rotation in this position");
+                        rot_tile(chosen, 90);
                         break;
                     case 3:
+                        sprintf(msg[6], "[Warning] You cannot mirror the tile in this position");
                         mir_tile(chosen);
                         break;
                 }
+                *color[6] = YELLOW_PAIR;
+                render_message_log(msg, color);
             }
             break;
         }
@@ -151,24 +157,24 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
         case 'Y':
         case KEY_ENTER: {
             int valid = can_place(rcb->gcb);
+            shift_msg(msg, color);
             if (!valid) {
-                shift_msg(msg, color);
                 sprintf(msg[6], "[Error] Invalid position"); 
                 *color[6] = RED_PAIR;
-                render_message_log(msg, color);
             }
             int update_status = update(rcb->gcb, 0);
             if (update_status < 0) {
-                shift_msg(msg, color);
                 sprintf(msg[6], "[Error] Board update failed"); 
                 *color[6] = RED_PAIR;
-                render_message_log(msg, color);
                 rcb->state = S_POSITIONING;
-                break;
+            } else {
+                sprintf(msg[6], "You have put the tile successfully"); 
+                *color[6] = GREEN_PAIR;
+                render_board(rcb->gcb);
+                render_tiles(rcb->gcb, 0);
+                rcb->state = S_CHOOSE_TILE;
             }
-            render_board(rcb->gcb);
-            render_tiles(rcb->gcb, 0);
-            rcb->state = S_CHOOSE_TILE;
+            render_message_log(msg, color);
             break;
         }
         case 'q':
