@@ -202,12 +202,12 @@ int render_message_log(char *msg[7], int *color[7])
     mvprintw(17, 0, "╔════════════════════════════════════════════════════════════════════════╗");
     for (int i = 0; i < 7; ++i) {
         mvprintw(i + 18, 0, "║ ");
-        attron(*color[i]);
+        attron(COLOR_PAIR(*color[i]));
         mvprintw(i + 18, 2, "%s", msg[i]);
         for (int j = 0; j < 71 - strlen(msg[i]); ++j) {
             printw(" ");
         } 
-        attroff(*color[i]);
+        attroff(COLOR_PAIR(*color[i]));
         printw("║");
     }
     mvprintw(25, 0, "╚════════════════════════════════════════════════════════════════════════╝");
