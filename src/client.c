@@ -44,7 +44,7 @@ int choose_tile_handler(int c, rcb_t *rcb, coord_t *coord)
             render_tiles(rcb->gcb, rcb->render_player);
             break;
         case ' ': {
-            tile_t *chosen = make_tile(tile_relation[coord->y][coord->x]);
+            tile_t *chosen = sel_tile(rcb->gcb, tile_relation[coord->y][coord->x]);
             chosen->pos.x = 7;
             chosen->pos.y = 7;
             rcb->chosen = chosen;
@@ -63,6 +63,7 @@ int positioning_handler(int c, rcb_t *rcb)
     recover_board_preview(rcb);
     tile_t* chosen = rcb->chosen;
     coord_t tmp_pos = chosen->pos;
+    int operation = 0;
     switch (c) {
         case 'h':
         case 'H':
@@ -90,22 +91,27 @@ int positioning_handler(int c, rcb_t *rcb)
             render_tiles(rcb->gcb, rcb->render_player);
             break;
         case 'r':
+            operation = 1; 
+            rot_tile(chosen, 90); 
+            break;
         case 'R':
-           rot_tile(chosen, 90); 
-           break;
+            operation = 2; 
+            rot_tile(chosen, 270); 
+            break;
         case 'm':
         case 'M':
-           mir_tile(chosen);
-           break;
+            operation = 3; 
+            mir_tile(chosen);
+            break;
         case KEY_BACKSPACE:
         case 'q':
         case 'Q':
-           recover_board_preview(rcb); 
-           rcb->state--;
-           return 0;
+            recover_board_preview(rcb); 
+            rcb->state--;
+            return 0;
         case ' ': {
-            rcb->state++;
-            break;
+             rcb->state++;
+             break;
         }
     }
     for (int i = 0; i < TILE[chosen->shape].blk_cnt; ++i) {
@@ -114,6 +120,19 @@ int positioning_handler(int c, rcb_t *rcb)
          || chosen->pos.y + chosen->blks[i].y >= N_ROW
          || chosen->pos.y + chosen->blks[i].y < 0) {
             chosen->pos = tmp_pos;
+            if (operation) {
+                switch (operation) {
+                    case 1:
+                        rot_tile(chosen, 270);
+                        break;
+                    case 2:
+                        rot_tile(chosen, 270);
+                        break;
+                    case 3:
+                        mir_tile(chosen);
+                        break;
+                }
+            }
             break;
         }
     }

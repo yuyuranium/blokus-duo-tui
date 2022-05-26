@@ -15,16 +15,7 @@ int main() {
     noecho();
     curs_set(0);
     
-    gcb_t *game = malloc(sizeof(gcb_t));
-    for (int y = 0; y < 14; ++y) {
-        for (int x = 0; x < 14; ++x) {
-            game->map[y][x] = -1;
-        }
-    }
-    for (int i = 0; i < 21; ++i) {
-        game->hand[0][i] = 1;
-        game->hand[1][i] = 1;
-    }
+    gcb_t* gcb = init_gcb(0);
     char *strs[6];
     int str_len[6] = {0};
     for (int i = 0; i < 6; ++i) {
@@ -33,16 +24,16 @@ int main() {
     
     rcb_t *rcb = malloc(sizeof(rcb_t));
     tile_t *tile = make_tile(SHAPE_W);
-    rcb->gcb = game;
+    rcb->gcb = gcb;
     rcb->chosen = tile;
     rcb->render_player = 0;
     rcb->state = 0;
     
-    render_board(game);
-    render_tiles(game, rcb->render_player);
+    render_board(gcb);
+    render_tiles(gcb, rcb->render_player);
     render_chosen_tile(tile);
     render_message_log(strs, str_len);
-    render_tile_preview(game, SHAPE_E);
+    render_tile_preview(gcb, SHAPE_E);
     
     coord_t *coord = malloc(sizeof(coord_t));
     coord->x = 0;
