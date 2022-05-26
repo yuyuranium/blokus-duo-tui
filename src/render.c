@@ -78,6 +78,8 @@ int render_board(gcb_t *gcb)
         }
         printw(" │\n");
     }
+    mvprintw(11, 11, "+");
+    mvprintw(6, 21, "+");
     return 0;
 }
     
