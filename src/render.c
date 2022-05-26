@@ -182,26 +182,6 @@ int recover_tile_preview(gcb_t *gcb, shape_t shape)
     return 0;
 }
 
-int render_chosen_tile(tile_t *tile)
-{
-    mvprintw(17, 0, " ╭─────────────────╮");
-    for (int i = 18; i <= 24; ++i) {
-        mvprintw(i, 0, " │                 │");
-    }
-    mvprintw(25, 0, " ╰─────────────────╯");
-
-    attron(COLOR_PAIR(CYAN_PAIR));
-    mvprintw(21, 10, "■");
-    attroff(COLOR_PAIR(CYAN_PAIR));
-    
-    for (int i = 1; i < TILE[tile->shape].blk_cnt; ++i) {
-        int y = 21 + tile->blks[i].y;
-        int x = 10 + tile->blks[i].x * 2;
-        mvprintw(y, x, "■");
-    }
-    return 0;
-}
-
 int render_message_log(char *msg[6], int len[6])
 {
     mvprintw(17, 23, "╔══════════════════════════════════════════════════════╗");

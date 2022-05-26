@@ -26,7 +26,6 @@ int recover_board_preview(rcb_t *rcb);
 int render_tiles(gcb_t *gcb, int player);
 int render_tile_preview(gcb_t *gcb, shape_t shape);
 int recover_tile_preview(gcb_t *gcb, shape_t shape);
-int render_chosen_tile(tile_t *tile);
 int render_message_log(char *msg[6], int len[6]);
 int shift_msg(char *msg[6], int len[6]);
 
