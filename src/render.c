@@ -232,16 +232,16 @@ int render_score(rcb_t *rcb) {
     init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
     init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
     gcb_t *gcb = rcb->gcb;
-    for (int i = 0; i < 2; ++i) {
-        if (gcb->score[i] > gcb->score[!i]) {
+    for (int p = 0; p < 2; ++p) {
+        if (gcb->score[p] > gcb->score[!p]) {
             attron(COLOR_PAIR(GREEN_PAIR));
-        } else if (gcb->score[i] < gcb->score[!i]) {
+        } else if (gcb->score[p] < gcb->score[!p]) {
             attron(COLOR_PAIR(RED_PAIR));
         }
-        mvprintw(20 + i, 59, "Player %d: %2d", i, gcb->score[i]);
-        if (gcb->score[i] > gcb->score[!i]) {
+        mvprintw(20 + p, 59, "Player %d: %2d", p, gcb->score[p]);
+        if (gcb->score[p] > gcb->score[!p]) {
             attroff(COLOR_PAIR(GREEN_PAIR));
-        } else if (gcb->score[i] < gcb->score[!i]) {
+        } else if (gcb->score[p] < gcb->score[!p]) {
             attroff(COLOR_PAIR(RED_PAIR));
         }
     }
