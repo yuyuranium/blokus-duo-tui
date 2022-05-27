@@ -1,7 +1,9 @@
 #include "blokus.h"
-#include <stdio.h>
 #include <stdlib.h>
+#if DEBUG
+#include <stdio.h>
 #include <string.h>
+#endif
 
 const coord_t STARTING_POINT[2] = {
     {.y = 0x9, .x = 0x4},
@@ -313,13 +315,14 @@ static int encode_tile(char *code, tile_t *tile)
     }
     *c = 0;
 
+#if DEBUG
     printf("code: ");
     char *p = c;
     for (c = &code[0]; c != p; ++c) {
         printf("(%x)", (int) *c);
     }
     printf("\n");
-
+#endif
     return 0;
 }
 
@@ -337,17 +340,18 @@ static tile_t *decode_tile(char *code)
         tile->blks[i].y = (int) *c++;
         tile->blks[i].x = (int) *c++;
     }
+
+#if DEBUG
     char map[8][8];
     memset(map, '.', 64);
-    for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
+    for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i)
         map[4 + tile->blks[i].y][4 + tile->blks[i].x] = 'o';
-    }
     for (int i = 0; i < 8; ++i) {
-        for (int j = 0; j < 8; ++j) {
+        for (int j = 0; j < 8; ++j)
             printf("%c ", map[i][j]);
-        }
         printf("\n");
     }
+#endif
     return tile;
 }
 
@@ -387,7 +391,6 @@ static int test_place(gcb_t *gcb, tile_t *tile)
 
             for (int j = 0; j < 4; ++j) {
                 int cy = y + CORNER[j].y, cx = x + CORNER[j].x;
-                printf("(%x, %x)\n", cy, cx);
 
                 // Must have at least one corner-to-corner contact
                 if (within_map(cy, cx) && gcb->map[cy][cx] == p)
