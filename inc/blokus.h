@@ -62,6 +62,7 @@ typedef struct {
     int next_empty[N_ROW * N_COL];
     int prev_empty[N_ROW * N_COL];
     int map[N_ROW][N_COL];
+    char code[16];
 } gcb_t;  // game control block
 
 extern const coord_t STARTING_POINT[2];
@@ -69,16 +70,14 @@ extern const coord_t CORNER[4];
 extern const coord_t EDGE[4];
 extern const struct _tile_attr TILE[SHAPE_Z + 1];
 
+// Functions driving the blockus game
 gcb_t *init_gcb(int turn);
-int can_place(gcb_t *gcb);  // TODO implement this
 tile_t *sel_tile(gcb_t *gcb, int shape);
-int update(gcb_t *gcb, unsigned char *code);
-int test_place(gcb_t *gcb, tile_t *tile);  // will be static
+int can_place(gcb_t *gcb);
+int update(gcb_t *gcb, char *code);
 
-tile_t *make_tile(shape_t shape);  // will be static
+// Functions manipulating tiles
 int rot_tile(tile_t *tile, int theta);
 int mir_tile(tile_t *tile);
-int encode_tile(tile_t *tile, unsigned char *code_out);
-tile_t *decode_tile(unsigned char *code);  // will be static
 
 #endif
