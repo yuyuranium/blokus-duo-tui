@@ -28,22 +28,21 @@ int main() {
     rcb->gcb = gcb;
     rcb->render_player = 0;
     rcb->state = 0;
+    rcb->coord.x = 0;
+    rcb->coord.y = 0;
     
     render_board(gcb);
     render_tiles(gcb, rcb->render_player);
     render_message_log(strs, colors);
     render_tile_preview(gcb, SHAPE_E);
     
-    coord_t *coord = malloc(sizeof(coord_t));
-    coord->x = 0;
-    coord->y = 0;
     do {
         refresh();
         int c = getch();
         if (c == ERR) continue;
         switch (rcb->state) {
             case S_CHOOSE_TILE:
-                choose_tile_handler(c, rcb, coord);
+                choose_tile_handler(c, rcb);
                 break;
             case S_POSITIONING:
                 positioning_handler(c, rcb, strs, colors);
