@@ -326,16 +326,16 @@ static int encode_tile(char *code, tile_t *tile)
     return 0;
 }
 
-static tile_t *decode_tile(char *code)
+static int decode_tile(tile_t *tile, char *code)
 {
-    char *c = &code[0];
-    if (*c < SHAPE_M || *c > SHAPE_Z)
-        return NULL;
+    if (!tile || !code)
+        return -1;
 
-    tile_t *tile = malloc(sizeof(tile_t));
-    tile->shape = (int) *c++;
+    char *c = &code[0];
+    if (tile->shape != (int) *c++)
+        return -1;
+
     tile->pos.y = (int) *c++; tile->pos.x = (int) *c++;
-    tile->blks = malloc(TILE[tile->shape].blk_cnt * sizeof(coord_t));
     for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
         tile->blks[i].y = (int) *c++;
         tile->blks[i].x = (int) *c++;
@@ -352,7 +352,7 @@ static tile_t *decode_tile(char *code)
         printf("\n");
     }
 #endif
-    return tile;
+    return 0;
 }
 
 static int test_place(gcb_t *gcb, tile_t *tile)
@@ -447,7 +447,11 @@ int can_place(gcb_t *gcb)
 int update(gcb_t *gcb, char *code)
 {
     int p = gcb->turn;
-    tile_t *tile = code ? decode_tile(code) : gcb->hand[p][gcb->sel_shape];
+    int shape = code ? (int) code[0] : gcb->sel_shape;
+    tile_t *tile = gcb->hand[p][shape];
+
+    if (code && decode_tile(tile, code) < 0)
+        return -1;
 
     if (test_place(gcb, tile) < 0)
         return -1;  // reject invalid update
@@ -461,11 +465,16 @@ int update(gcb_t *gcb, char *code)
         gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
     }
 
-    encode_tile(gcb->code, tile);  // record the last update with gcb->code
+    encode_tile(gcb->code, tile);  // record the latest update in gcb->code
     gcb->score[p] += TILE[tile->shape].blk_cnt;
+
+    // Clear p's hand
+    gcb->hand[p][tile->shape] = NULL;
+    free(tile);
+
+    // Change gcb's state
     gcb->turn = !gcb->turn;
     gcb->sel_shape = -1;
-    free(tile);
     return 0;
 }
 
