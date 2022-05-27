@@ -25,9 +25,7 @@ int main() {
     }
     
     rcb_t *rcb = malloc(sizeof(rcb_t));
-    tile_t *tile = make_tile(SHAPE_W);
     rcb->gcb = gcb;
-    rcb->chosen = tile;
     rcb->render_player = 0;
     rcb->state = 0;
     

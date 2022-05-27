@@ -111,8 +111,15 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         rcb->state--;
         return 0;
     case ' ': {
-         rcb->state++;
          shift_msg(msg, color);
+         int valid = can_place(rcb->gcb);
+         if (!valid) {
+             snprintf(msg[6], 70, "[Warning] You cannot place the tile here"); 
+             *color[6] = YELLOW_PAIR;
+             render_message_log(msg, color);
+             break;
+         }
+         rcb->state++;
          snprintf(msg[6], 70, "Do you want to place at (%x, %x)? (Y/n)",
                  chosen->pos.y, chosen->pos.x);
          render_message_log(msg, color);
@@ -156,12 +163,7 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
     case 'y':
     case 'Y':
     case 10: {
-        int valid = can_place(rcb->gcb);
-        shift_msg(msg, color);
-        if (!valid) {
-            snprintf(msg[6], 70, "[Error] Invalid position"); 
-            *color[6] = RED_PAIR;
-        }
+         shift_msg(msg, color);
         int update_status = update(rcb->gcb, 0);
         if (update_status < 0) {
             snprintf(msg[6], 70, "[Error] Board update failed"); 
