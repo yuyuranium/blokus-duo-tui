@@ -201,18 +201,50 @@ int render_message_log(char *msg[7], int *color[7])
     init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
     init_pair(YELLOW_PAIR, COLOR_YELLOW, COLOR_BLACK);
     
-    mvprintw(17, 0, "╔════════════════════════════════════════════════════════════════════════╗");
+    mvprintw(17, 0, "╔══════════════════════════════════════════════════════╗");
     for (int i = 0; i < 7; ++i) {
         mvprintw(i + 18, 0, "║ ");
         attron(COLOR_PAIR(*color[i]));
         mvprintw(i + 18, 2, "%s", msg[i]);
-        for (int j = 0; j < 71 - strlen(msg[i]); ++j) {
+        for (int j = 0; j < MAX_LOG_LEN - strlen(msg[i]); ++j) {
             printw(" ");
         } 
         attroff(COLOR_PAIR(*color[i]));
         printw("║");
     }
-    mvprintw(25, 0, "╚════════════════════════════════════════════════════════════════════════╝");
+    mvprintw(25, 0, "╚══════════════════════════════════════════════════════╝");
+    return 0;
+}
+
+int render_score_board()
+{
+    mvprintw(17, 57, "╔══════════════╗");
+    mvprintw(18, 57, "║ Score Board  ║");
+    for (int i = 19; i < 25; ++i) {
+        mvprintw(i, 57, "║              ║");
+    }
+    mvprintw(25, 57, "╚══════════════╝");
+    return 0;
+}
+
+int render_score(rcb_t *rcb) {
+    start_color();
+    init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
+    init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
+    gcb_t *gcb = rcb->gcb;
+    for (int p = 0; p < 2; ++p) {
+        if (gcb->score[p] > gcb->score[!p]) {
+            attron(COLOR_PAIR(GREEN_PAIR));
+        } else if (gcb->score[p] < gcb->score[!p]) {
+            attron(COLOR_PAIR(RED_PAIR));
+        }
+        mvprintw(20 + p, 59, "Player %d: %2d", p, gcb->score[p]);
+        if (gcb->score[p] > gcb->score[!p]) {
+            attroff(COLOR_PAIR(GREEN_PAIR));
+        } else if (gcb->score[p] < gcb->score[!p]) {
+            attroff(COLOR_PAIR(RED_PAIR));
+        }
+    }
     return 0;
 }
 
