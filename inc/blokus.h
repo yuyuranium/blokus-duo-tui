@@ -63,10 +63,6 @@ struct _tile_attr {
     int rot_cnt;
 };
 
-struct _status_attr {
-    char *desc;
-};
-
 typedef struct {
     shape_t shape;
     coord_t *blks;
