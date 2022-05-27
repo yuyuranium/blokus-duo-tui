@@ -12,6 +12,8 @@ extern const shape_t tile_relation[4][6];
 #define GREEN_PAIR 3
 #define YELLOW_PAIR 4
 
+#define MAX_LOG_LEN 53
+
 typedef struct {
     gcb_t *gcb;
     int render_player;

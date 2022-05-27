@@ -206,7 +206,7 @@ int render_message_log(char *msg[7], int *color[7])
         mvprintw(i + 18, 0, "║ ");
         attron(COLOR_PAIR(*color[i]));
         mvprintw(i + 18, 2, "%s", msg[i]);
-        for (int j = 0; j < 53 - strlen(msg[i]); ++j) {
+        for (int j = 0; j < MAX_LOG_LEN - strlen(msg[i]); ++j) {
             printw(" ");
         } 
         attroff(COLOR_PAIR(*color[i]));

@@ -125,13 +125,13 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
          shift_msg(msg, color);
          int valid = can_place(rcb->gcb);
          if (!valid) {
-             snprintf(msg[6], 70, "[Warning] You cannot place the tile here"); 
+             snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot place the tile here"); 
              *color[6] = YELLOW_PAIR;
              render_message_log(msg, color);
              break;
          }
          rcb->state++;
-         snprintf(msg[6], 70, "Do you want to place at (%x, %x)? (Y/n)",
+         snprintf(msg[6], MAX_LOG_LEN, "Do you want to place at (%x, %x)? (Y/n)",
                  chosen->pos.y, chosen->pos.x);
          render_message_log(msg, color);
          break;
@@ -147,15 +147,15 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                 shift_msg(msg, color);
                 switch (operation) {
                 case 1:
-                    snprintf(msg[6], 70, "[Warning] You cannot do rotation in this position");
+                    snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot do rotation in this position");
                     rot_tile(chosen, 270);
                     break;
                 case 2:
-                    snprintf(msg[6], 70, "[Warning] You cannot do rotation in this position");
+                    snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot do rotation in this position");
                     rot_tile(chosen, 90);
                     break;
                 case 3:
-                    snprintf(msg[6], 70, "[Warning] You cannot mirror the tile in this position");
+                    snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot mirror the tile here");
                     mir_tile(chosen);
                     break;
                 }
@@ -178,11 +178,11 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
          shift_msg(msg, color);
         int update_status = update(rcb->gcb, 0);
         if (update_status < 0) {
-            snprintf(msg[6], 70, "[Error] Board update failed"); 
+            snprintf(msg[6], MAX_LOG_LEN, "[Error] Board update failed"); 
             *color[6] = RED_PAIR;
             rcb->state = S_POSITIONING;
         } else {
-            snprintf(msg[6], 70, "You have put the tile successfully"); 
+            snprintf(msg[6], MAX_LOG_LEN, "You have put the tile successfully"); 
             *color[6] = GREEN_PAIR;
             render_board(rcb->gcb);
             render_tiles(rcb->gcb, 0);
@@ -211,7 +211,7 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
     case 'n':
     case 'N':
         shift_msg(msg, color);
-        snprintf(msg[6], 70, "Tile placement canceled"); 
+        snprintf(msg[6], MAX_LOG_LEN, "Tile placement canceled"); 
         *color[6] = YELLOW_PAIR;
         render_message_log(msg, color);
         rcb->state = S_POSITIONING;
