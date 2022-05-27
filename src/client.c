@@ -166,7 +166,7 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 }
 int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
 {
-    gcb_t* gcb = rcb->gcb;
+    gcb_t *gcb = rcb->gcb;
     switch (c) {
     case 'y':
     case 'Y':
