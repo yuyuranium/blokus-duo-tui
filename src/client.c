@@ -187,15 +187,15 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
             for (int i = 0; i < 4; ++i) {
                 for (int j = 0; j < 6; ++j) {
                     if (gcb->hand[0][tile_relation[i][j]]) {
-                        rcb->coord.x = i;
-                        rcb->coord.y = j;
+                        rcb->coord.x = j;
+                        rcb->coord.y = i;
                         tile_found = 1;
                         break;
                     }
                 }
                 if (tile_found) break;
             }
-            render_tile_preview(gcb, tile_relation[rcb->coord.x][rcb->coord.y]);
+            render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
         }
         render_message_log(msg, color);
         break;
