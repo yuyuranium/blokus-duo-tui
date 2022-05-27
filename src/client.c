@@ -15,6 +15,8 @@ int choose_tile_handler(int c, rcb_t *rcb)
     case KEY_LEFT:
         if (rcb->coord.x > 0) {
             int x = rcb->coord.x - 1;
+            if (tile_relation[rcb->coord.y][rcb->coord.x] == 
+                tile_relation[rcb->coord.y][x]) x--;
             while (x >= 0 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x--;
             rcb->coord.x = (x >= 0)? x : rcb->coord.x;
         }
@@ -42,6 +44,8 @@ int choose_tile_handler(int c, rcb_t *rcb)
     case KEY_RIGHT:
         if (rcb->coord.x < 5) {
             int x = rcb->coord.x + 1;
+            if (tile_relation[rcb->coord.y][rcb->coord.x] == 
+                tile_relation[rcb->coord.y][x]) x++;
             while (x <= 5 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x++;
             rcb->coord.x = (x <= 5)? x : rcb->coord.x;
         }
@@ -69,7 +73,7 @@ int choose_tile_handler(int c, rcb_t *rcb)
 int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
     recover_board_preview(rcb);
-    tile_t* chosen = rcb->chosen;
+    tile_t *chosen = rcb->chosen;
     coord_t tmp_pos = chosen->pos;
     int operation = 0;
     switch (c) {
