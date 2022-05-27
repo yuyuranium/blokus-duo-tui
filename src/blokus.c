@@ -306,14 +306,16 @@ static int encode_tile(char *code, tile_t *tile)
         return -1;
 
     char *c = &code[0];
-    rot_tile(tile, 180);
+    rot_tile(tile, 180);  // encode in opponent's point of view
     *c++ = tile->shape & 0xff;
-    *c++ = N_ROW - tile->pos.y - 1; *c++ = N_COL - tile->pos.x - 1;
+    *c++ = (N_ROW - tile->pos.y - 1) & 0xff;
+    *c++ = (N_COL - tile->pos.x - 1) & 0xff;
     for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
         *c++ = tile->blks[i].y & 0xff;
         *c++ = tile->blks[i].x & 0xff;
     }
     *c = 0;
+    rot_tile(tile, -180);  // recover the tile
 
 #if DEBUG
     printf("code: ");
@@ -341,6 +343,10 @@ static int decode_tile(tile_t *tile, char *code)
         tile->blks[i].x = (int) *c++;
     }
 
+    // code length should be (shape + pos * 2 + blk_cnt * 2)
+    if (c - &code[0] != 2 * TILE[tile->shape].blk_cnt + 3)
+        return -1;
+
 #if DEBUG
     char map[8][8];
     memset(map, '.', 64);
@@ -362,39 +368,57 @@ static int test_place(gcb_t *gcb, tile_t *tile)
 
     // If the player hasn't place any tiles yet
     if (gcb->score[p] == 0) {
+        gcb->status = INV_P;
         for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
             int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
 
             // Out of map
-            if (!within_map(y, x))
+            if (!within_map(y, x)) {
+                gcb->status = INV_O;
                 return -1;
+            }
 
             // Check if covering starting point
-            if (y == STARTING_POINT[p].y && x == STARTING_POINT[p].x)
+            if (y == STARTING_POINT[p].y && x == STARTING_POINT[p].x) {
+                gcb->status = OK;
                 valid = 1;
+            }
         }
     } else {
+        gcb->status = INV_C;
         for (int i = 0; i < TILE[tile->shape].blk_cnt; ++i) {
             int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
 
-            // Out of map or overlapping
-            if (!within_map(y, x) || gcb->map[y][x] != -1)
+            // Out of map
+            if (!within_map(y, x)) {
+                gcb->status = INV_O;
                 return -1;
+            }
+
+            // Overlapping
+            if (gcb->map[y][x] != -1) {
+                gcb->status = INV_L;
+                return -1;
+            }
 
             for (int j = 0; j < 4; ++j) {
                 int ey = y + EDGE[j].y, ex = x + EDGE[j].x;
 
                 // Edge-to-edge contact is not allowed
-                if (within_map(ey, ex) && gcb->map[ey][ex] == p)
+                if (within_map(ey, ex) && gcb->map[ey][ex] == p) {
+                    gcb->status = INV_E;
                     return -1;
+                }
             }
 
             for (int j = 0; j < 4; ++j) {
                 int cy = y + CORNER[j].y, cx = x + CORNER[j].x;
 
                 // Must have at least one corner-to-corner contact
-                if (within_map(cy, cx) && gcb->map[cy][cx] == p)
+                if (within_map(cy, cx) && gcb->map[cy][cx] == p) {
+                    gcb->status = OK;
                     valid = 1;
+                }
             }
         }
     }
@@ -402,11 +426,11 @@ static int test_place(gcb_t *gcb, tile_t *tile)
     return (valid)? 0 : -1;
 }
 
-gcb_t *init_gcb(int turn)
+gcb_t *init_gcb(int first)
 {
     gcb_t *gcb = malloc(sizeof(gcb_t));
-    gcb->turn = turn;
-    gcb->sel_shape = -1;
+    gcb->turn = first;
+    gcb->sel = -1;
     gcb->score[0] = 0;
     gcb->score[1] = 0;
     for (int s = 0; s <= SHAPE_Z; ++s) {
@@ -424,34 +448,51 @@ gcb_t *init_gcb(int turn)
     for (int i = 1; i < 196; ++i)
         gcb->prev_empty[i] = i - 1;
     gcb->prev_empty[0] = -1;
+    gcb->status = OK;
     return gcb;
 }
 
 tile_t *sel_tile(gcb_t *gcb, int shape)
 {
-    gcb->sel_shape = shape;
-    return gcb->hand[gcb->turn][gcb->sel_shape];
+    if (shape < SHAPE_M || shape > SHAPE_Z) {
+        gcb->status = ERR_V;
+        return NULL;
+    }
+
+    int p = gcb->turn;
+    tile_t *tile = gcb->hand[p][shape];
+    if (!tile) {
+        gcb->status = INV_N;
+        return NULL;
+    }
+
+    gcb->sel = shape;
+    gcb->status = OK;
+    return tile;
 }
 
 int can_place(gcb_t *gcb)
 {
+    if (gcb->sel == -1) {
+        gcb->status = INV_S;
+        return -1;
+    }
+
     int p = gcb->turn;
     tile_t *tile;
-    if (gcb->sel_shape == -1)
-        return -1;
-
-    tile = gcb->hand[p][gcb->sel_shape];
+    tile = gcb->hand[p][gcb->sel];
     return test_place(gcb, tile) == 0;
 }
 
 int update(gcb_t *gcb, char *code)
 {
-    int p = gcb->turn;
-    int shape = code ? (int) code[0] : gcb->sel_shape;
-    tile_t *tile = gcb->hand[p][shape];
+    int p = gcb->turn, s = code ? (int) code[0] : gcb->sel;
+    tile_t *tile = gcb->hand[p][s];
 
-    if (code && decode_tile(tile, code) < 0)
+    if (code && decode_tile(tile, code) < 0) {
+        gcb->status = ERR_D;
         return -1;
+    }
 
     if (test_place(gcb, tile) < 0)
         return -1;  // reject invalid update
@@ -465,7 +506,11 @@ int update(gcb_t *gcb, char *code)
         gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
     }
 
-    encode_tile(gcb->code, tile);  // record the latest update in gcb->code
+    // record the latest update in gcb->code
+    if (encode_tile(gcb->code, tile) < 0) {
+        gcb->status = ERR_E;
+        return -1;
+    }
     gcb->score[p] += TILE[tile->shape].blk_cnt;
 
     // Clear p's hand
@@ -473,8 +518,12 @@ int update(gcb_t *gcb, char *code)
     free(tile);
 
     // Change gcb's state
+    // TODO check if opponent can place or not
+    // if not, p continues to play of if p cannot place either
+    // then gameover, determine which player wins
     gcb->turn = !gcb->turn;
-    gcb->sel_shape = -1;
+    gcb->sel = -1;
+    gcb->status = OK;
     return 0;
 }
 
