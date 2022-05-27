@@ -17,6 +17,7 @@ typedef struct {
     int render_player;
     int state;
     tile_t *chosen;
+    coord_t coord;
 } rcb_t;
 
 int init_all_colors();

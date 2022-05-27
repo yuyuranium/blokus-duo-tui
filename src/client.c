@@ -4,39 +4,50 @@
 #include <stdlib.h>
 #include <string.h>
 
-int choose_tile_handler(int c, rcb_t *rcb, coord_t *coord)
+int choose_tile_handler(int c, rcb_t *rcb)
 {
     if (rcb->render_player == 0) 
-        recover_tile_preview(rcb->gcb, tile_relation[coord->y][coord->x]);
+        recover_tile_preview(rcb->gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
+    gcb_t* gcb = rcb->gcb;
     switch (c) {
     case 'h':
     case 'H':
     case KEY_LEFT:
-        if (coord->x > 0) {
-            coord->x--;
-            if (coord->x > 0 
-                && tile_relation[coord->y][coord->x] 
-                == tile_relation[coord->y][coord->x + 1]) coord->x--;
+        if (rcb->coord.x > 0) {
+            int x = rcb->coord.x - 1;
+            if (tile_relation[rcb->coord.y][rcb->coord.x] == 
+                tile_relation[rcb->coord.y][x]) x--;
+            while (x >= 0 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x--;
+            rcb->coord.x = (x >= 0)? x : rcb->coord.x;
         }
         break;
     case 'j':
     case 'J':
     case KEY_DOWN:
-        if (coord->y < 3) coord->y++;
+        if (rcb->coord.y < 3) {
+            int y = rcb->coord.y + 1;
+            while (y <= 3 && !gcb->hand[0][tile_relation[y][rcb->coord.x]]) y++;
+            rcb->coord.y = (y <= 3)? y : rcb->coord.y;
+        }
         break;
     case 'k':
     case 'K':
     case KEY_UP:
-        if (coord->y > 0) coord->y--;
+        if (rcb->coord.y > 0) {
+            int y = rcb->coord.y - 1;
+            while (y >= 0 && !gcb->hand[0][tile_relation[y][rcb->coord.x]]) y--;
+            rcb->coord.y = (y >= 0)? y : rcb->coord.y;
+        }
         break;
     case 'l':
     case 'L':
     case KEY_RIGHT:
-        if (coord->x < 5) {
-            coord->x++;
-            if (coord->x < 5 
-                && tile_relation[coord->y][coord->x] 
-                == tile_relation[coord->y][coord->x - 1]) coord->x++;
+        if (rcb->coord.x < 5) {
+            int x = rcb->coord.x + 1;
+            if (tile_relation[rcb->coord.y][rcb->coord.x] == 
+                tile_relation[rcb->coord.y][x]) x++;
+            while (x <= 5 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x++;
+            rcb->coord.x = (x <= 5)? x : rcb->coord.x;
         }
         break;
     case 'c':
@@ -45,7 +56,7 @@ int choose_tile_handler(int c, rcb_t *rcb, coord_t *coord)
         render_tiles(rcb->gcb, rcb->render_player);
         break;
     case ' ': {
-        tile_t *chosen = sel_tile(rcb->gcb, tile_relation[coord->y][coord->x]);
+        tile_t *chosen = sel_tile(rcb->gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
         chosen->pos.x = 7;
         chosen->pos.y = 7;
         rcb->chosen = chosen;
@@ -55,14 +66,14 @@ int choose_tile_handler(int c, rcb_t *rcb, coord_t *coord)
     }
     }
     if (rcb->render_player == 0) 
-        render_tile_preview(rcb->gcb, tile_relation[coord->y][coord->x]);
+        render_tile_preview(rcb->gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
     return 0;
 }
 
 int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
     recover_board_preview(rcb);
-    tile_t* chosen = rcb->chosen;
+    tile_t *chosen = rcb->chosen;
     coord_t tmp_pos = chosen->pos;
     int operation = 0;
     switch (c) {
@@ -111,8 +122,15 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         rcb->state--;
         return 0;
     case ' ': {
-         rcb->state++;
          shift_msg(msg, color);
+         int valid = can_place(rcb->gcb);
+         if (!valid) {
+             snprintf(msg[6], 70, "[Warning] You cannot place the tile here"); 
+             *color[6] = YELLOW_PAIR;
+             render_message_log(msg, color);
+             break;
+         }
+         rcb->state++;
          snprintf(msg[6], 70, "Do you want to place at (%x, %x)? (Y/n)",
                  chosen->pos.y, chosen->pos.x);
          render_message_log(msg, color);
@@ -152,16 +170,12 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 }
 int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
 {
+    gcb_t *gcb = rcb->gcb;
     switch (c) {
     case 'y':
     case 'Y':
     case 10: {
-        int valid = can_place(rcb->gcb);
-        shift_msg(msg, color);
-        if (!valid) {
-            snprintf(msg[6], 70, "[Error] Invalid position"); 
-            *color[6] = RED_PAIR;
-        }
+         shift_msg(msg, color);
         int update_status = update(rcb->gcb, 0);
         if (update_status < 0) {
             snprintf(msg[6], 70, "[Error] Board update failed"); 
@@ -173,6 +187,19 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
             render_board(rcb->gcb);
             render_tiles(rcb->gcb, 0);
             rcb->state = S_CHOOSE_TILE;
+            int tile_found = 0;
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 6; ++j) {
+                    if (gcb->hand[0][tile_relation[i][j]]) {
+                        rcb->coord.x = j;
+                        rcb->coord.y = i;
+                        tile_found = 1;
+                        break;
+                    }
+                }
+                if (tile_found) break;
+            }
+            render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
         }
         render_message_log(msg, color);
         break;
