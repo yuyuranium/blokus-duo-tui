@@ -78,7 +78,8 @@ int render_board(gcb_t *gcb)
             if (gcb->map[y][x] != -1) {
                 printw("%s ", (gcb->map[y][x])? "□" : "■"); 
             } else {
-                printw("%s ", (((y == 4 && x == 9) || (y == 9 && x == 4)))? "+" : "·"); 
+                printw("%s ",
+                       (((y == 4 && x == 9) || (y == 9 && x == 4)))? "+" : "·"); 
             }
         }
         printw(" │\n");
@@ -129,10 +130,11 @@ int recover_board_preview(rcb_t *rcb)
         int blk_y = tile->pos.y + tile->blks[i].y;
         if (gcb->map[blk_y][blk_x] != -1) {
             mvprintw(blk_y + 2, blk_x * 2 + 3, "%s ",
-                    (gcb->map[blk_y][blk_x])? "□" : "■"); 
+                     (gcb->map[blk_y][blk_x])? "□" : "■"); 
         } else {
             mvprintw(blk_y + 2, blk_x * 2 + 3, "%s ",
-                    (((blk_y == 4 && blk_x == 9) || (blk_y == 9 && blk_x == 4)))? "+" : "·"); 
+                     (((blk_y == 4 && blk_x == 9) || 
+                       (blk_y == 9 && blk_x == 4)))? "+" : "·"); 
         }
     }  
     return 0;
