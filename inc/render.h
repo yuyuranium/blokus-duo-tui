@@ -28,6 +28,8 @@ int render_tiles(gcb_t *gcb, int player);
 int render_tile_preview(gcb_t *gcb, shape_t shape);
 int recover_tile_preview(gcb_t *gcb, shape_t shape);
 int render_message_log(char *msg[6], int *color[7]);
+int render_score_board();
+int render_score(rcb_t *rcb);
 int shift_msg(char *msg[6], int *color[7]);
 
 #endif

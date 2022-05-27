@@ -35,6 +35,8 @@ int main() {
     render_tiles(gcb, rcb->render_player);
     render_message_log(strs, colors);
     render_tile_preview(gcb, SHAPE_E);
+    render_score_board();
+    render_score(rcb);
     
     do {
         refresh();

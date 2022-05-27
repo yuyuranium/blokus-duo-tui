@@ -186,7 +186,10 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
             *color[6] = GREEN_PAIR;
             render_board(rcb->gcb);
             render_tiles(rcb->gcb, 0);
+            render_score(rcb);
             rcb->state = S_CHOOSE_TILE;
+
+            // find next start candidate tile
             int tile_found = 0;
             for (int i = 0; i < 4; ++i) {
                 for (int j = 0; j < 6; ++j) {
