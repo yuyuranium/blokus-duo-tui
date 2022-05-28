@@ -89,7 +89,7 @@ extern const struct _tile_attr TILE[SHAPE_Z + 1];
 // Functions driving the blockus game
 gcb_t *init_gcb(int first);
 tile_t *sel_tile(gcb_t *gcb, int shape);
-int can_place(gcb_t *gcb);
+int is_valid(gcb_t *gcb);
 int update(gcb_t *gcb, char *code);
 
 // Functions manipulating tiles

@@ -471,7 +471,7 @@ tile_t *sel_tile(gcb_t *gcb, int shape)
     return tile;
 }
 
-int can_place(gcb_t *gcb)
+int is_valid(gcb_t *gcb)
 {
     if (gcb->sel == -1) {
         gcb->status = INV_S;
