@@ -361,9 +361,9 @@ static int decode_tile(tile_t *tile, char *code)
     return 0;
 }
 
-static int test_place(gcb_t *gcb, tile_t *tile)
+static int test_place(gcb_t *gcb, tile_t *tile, int p)
 {
-    int p = gcb->turn, valid = 0;
+    int valid = 0;
     coord_t pos = tile->pos;
 
     // If the player hasn't place any tiles yet
@@ -426,6 +426,14 @@ static int test_place(gcb_t *gcb, tile_t *tile)
     return (valid)? 0 : -1;
 }
 
+int can_place(gcb_t *gcb, int player)
+{
+    // For each hand of player
+    // For each empty map entry
+    // Test place
+    return 0;
+}
+
 gcb_t *init_gcb(int first)
 {
     gcb_t *gcb = malloc(sizeof(gcb_t));
@@ -481,7 +489,7 @@ int is_valid(gcb_t *gcb)
     int p = gcb->turn;
     tile_t *tile;
     tile = gcb->hand[p][gcb->sel];
-    return test_place(gcb, tile) == 0;
+    return test_place(gcb, tile, p) == 0;
 }
 
 int update(gcb_t *gcb, char *code)
@@ -494,7 +502,7 @@ int update(gcb_t *gcb, char *code)
         return -1;
     }
 
-    if (test_place(gcb, tile) < 0)
+    if (test_place(gcb, tile, p) < 0)
         return -1;  // reject invalid update
 
     coord_t pos = tile->pos;
