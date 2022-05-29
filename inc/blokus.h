@@ -81,6 +81,10 @@ typedef struct {
     int map[N_ROW][N_COL];
     char code[16];
     int status;
+    struct {
+        int shape;
+        coord_t pos;
+    } hint;
 } gcb_t;  // game control block
 
 extern const coord_t STARTING_POINT[2];

@@ -467,6 +467,8 @@ int can_place(gcb_t *gcb, int p)
 recover_tile_and_return_true:
     if (m) mir_tile(tile);
     rot_tile(tile, -90 * r);
+    gcb->hint.pos = tile->pos;
+    gcb->hint.shape = tile->shape;
     return 1;
 }
 
