@@ -496,6 +496,8 @@ gcb_t *init_gcb(int first)
         gcb->prev_empty[i] = i - 1;
     gcb->prev_empty[0] = -1;
     gcb->status = OK;
+    // generate hint on gcb initialization
+    can_place(gcb, first);
     return gcb;
 }
 
