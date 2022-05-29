@@ -6,8 +6,10 @@
 
 int choose_tile_handler(int c, rcb_t *rcb)
 {
-    if (rcb->render_player == 0) 
-        recover_tile_preview(rcb->gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
+    if (rcb->render_player == 0) {
+        recover_tile_preview(rcb->gcb,
+                             tile_relation[rcb->coord.y][rcb->coord.x]);
+    }
     gcb_t* gcb = rcb->gcb;
     switch (c) {
     case 'h':
@@ -56,7 +58,8 @@ int choose_tile_handler(int c, rcb_t *rcb)
         render_tiles(rcb->gcb, rcb->render_player);
         break;
     case ' ': {
-        tile_t *chosen = sel_tile(rcb->gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
+        tile_t *chosen = sel_tile(rcb->gcb,
+                                  tile_relation[rcb->coord.y][rcb->coord.x]);
         chosen->pos.x = 7;
         chosen->pos.y = 7;
         rcb->chosen = chosen;
@@ -65,8 +68,10 @@ int choose_tile_handler(int c, rcb_t *rcb)
         break;
     }
     }
-    if (rcb->render_player == 0) 
-        render_tile_preview(rcb->gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
+    if (rcb->render_player == 0) {
+        render_tile_preview(rcb->gcb,
+                            tile_relation[rcb->coord.y][rcb->coord.x]);
+    }
     return 0;
 }
 
@@ -121,63 +126,67 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         recover_board_preview(rcb); 
         rcb->state--;
         return 0;
-    case ' ': {
-         shift_msg(msg, color);
-         int valid = can_place(rcb->gcb);
-         if (!valid) {
-             snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot place the tile here"); 
-             *color[6] = YELLOW_PAIR;
-             render_message_log(msg, color);
-             break;
-         }
-         rcb->state++;
-         snprintf(msg[6], MAX_LOG_LEN, "Do you want to place at (%x, %x)? (Y/n)",
-                 chosen->pos.y, chosen->pos.x);
-         render_message_log(msg, color);
-         break;
-    }
-    }
-    for (int i = 0; i < TILE[chosen->shape].blk_cnt; ++i) {
-        if (chosen->pos.x + chosen->blks[i].x >= N_COL ||
-            chosen->pos.x + chosen->blks[i].x < 0 ||
-            chosen->pos.y + chosen->blks[i].y >= N_ROW ||
-            chosen->pos.y + chosen->blks[i].y < 0) {
-            chosen->pos = tmp_pos;
-            if (operation) {
-                shift_msg(msg, color);
-                switch (operation) {
-                case 1:
-                    snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot do rotation in this position");
-                    rot_tile(chosen, 270);
-                    break;
-                case 2:
-                    snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot do rotation in this position");
-                    rot_tile(chosen, 90);
-                    break;
-                case 3:
-                    snprintf(msg[6], MAX_LOG_LEN, "[Warning] You cannot mirror the tile here");
-                    mir_tile(chosen);
-                    break;
-                }
-                *color[6] = YELLOW_PAIR;
-                render_message_log(msg, color);
-            }
+    case ' ':
+        shift_msg(msg, color);
+        if (!is_valid(rcb->gcb)) {
+            snprintf(msg[6], MAX_LOG_LEN,
+                     "[Warning] You cannot place the tile here"); 
+            *color[6] = YELLOW_PAIR;
+            render_message_log(msg, color);
             break;
         }
+        rcb->state++;
+        snprintf(msg[6], MAX_LOG_LEN,
+                 "Do you want to place at (%x, %x)? (Y/n)",
+                 chosen->pos.y, chosen->pos.x);
+        render_message_log(msg, color);
+        break;
+    }
+    for (int i = 0; i < TILE[chosen->shape].blk_cnt; ++i) {
+        if (chosen->pos.x + chosen->blks[i].x < N_COL &&
+            chosen->pos.x + chosen->blks[i].x >= 0 &&
+            chosen->pos.y + chosen->blks[i].y < N_ROW &&
+            chosen->pos.y + chosen->blks[i].y >= 0)
+            continue;
+            
+        chosen->pos = tmp_pos;
+        if (operation) {
+            shift_msg(msg, color);
+            switch (operation) {
+            case 1:
+                snprintf(msg[6], MAX_LOG_LEN,
+                         "[Warning] You cannot do rotation in this position");
+                rot_tile(chosen, 270);
+                break;
+            case 2:
+                snprintf(msg[6], MAX_LOG_LEN,
+                         "[Warning] You cannot do rotation in this position");
+                rot_tile(chosen, 90);
+                break;
+            case 3:
+                snprintf(msg[6], MAX_LOG_LEN,
+                         "[Warning] You cannot mirror the tile here");
+                mir_tile(chosen);
+                break;
+            }
+            *color[6] = YELLOW_PAIR;
+            render_message_log(msg, color);
+        }
+        break;
     }
     render_board_preview(rcb);
     return 0;
 }
-int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
+
+int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
     gcb_t *gcb = rcb->gcb;
     switch (c) {
     case 'y':
     case 'Y':
-    case 10: {
-         shift_msg(msg, color);
-        int update_status = update(rcb->gcb, 0);
-        if (update_status < 0) {
+    case 10:
+        shift_msg(msg, color);
+        if (update(rcb->gcb, 0) < 0) {
             snprintf(msg[6], MAX_LOG_LEN, "[Error] Board update failed"); 
             *color[6] = RED_PAIR;
             rcb->state = S_POSITIONING;
@@ -206,7 +215,6 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
         }
         render_message_log(msg, color);
         break;
-    }
     case 'q':
     case 'n':
     case 'N':
@@ -216,7 +224,6 @@ int placing_handler(int c, rcb_t *rcb, char *msg[6], int *color[6])
         render_message_log(msg, color);
         rcb->state = S_POSITIONING;
         break;
-        
     } 
     return 0;
 }

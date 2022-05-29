@@ -251,7 +251,7 @@ int render_score(rcb_t *rcb) {
 int shift_msg(char *msg[7], int *color[7])
 {
     for (int i = 0; i < 6; ++i) {
-        strncpy(msg[i], msg[i + 1], strlen(msg[i + 1]));
+        strncpy(msg[i], msg[i + 1], MAX_LOG_LEN);
         msg[i][strlen(msg[i + 1])] = '\0';
         *color[i] = *color[i + 1];
     }

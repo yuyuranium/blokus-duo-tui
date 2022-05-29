@@ -20,7 +20,7 @@ typedef struct {
     int state;
     tile_t *chosen;
     coord_t coord;
-} rcb_t;
+} rcb_t;  // render control block
 
 int init_all_colors();
 int render_board(gcb_t *gcb);
@@ -29,9 +29,9 @@ int recover_board_preview(rcb_t *rcb);
 int render_tiles(gcb_t *gcb, int player);
 int render_tile_preview(gcb_t *gcb, shape_t shape);
 int recover_tile_preview(gcb_t *gcb, shape_t shape);
-int render_message_log(char *msg[6], int *color[7]);
+int render_message_log(char *msg[7], int *color[7]);
 int render_score_board();
 int render_score(rcb_t *rcb);
-int shift_msg(char *msg[6], int *color[7]);
+int shift_msg(char *msg[7], int *color[7]);
 
 #endif
