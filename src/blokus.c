@@ -431,6 +431,9 @@ int can_place(gcb_t *gcb, int player)
     // For each hand of player
     // For each empty map entry
     // Test place
+    for (int s = SHAPE_M; s <= SHAPE_Z; ++s) {
+        
+    }
     return 0;
 }
 
@@ -450,6 +453,7 @@ gcb_t *init_gcb(int first)
             gcb->map[y][x] = -1;
         }
     }
+    gcb->empty = 0;
     for (int i = 0; i < 195; ++i)
         gcb->next_empty[i] = i + 1;
     gcb->next_empty[195] = -1;
@@ -510,8 +514,19 @@ int update(gcb_t *gcb, char *code)
         int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
         int k = N_ROW * y + x;
         gcb->map[y][x] = p;
-        gcb->next_empty[gcb->prev_empty[k]] = gcb->next_empty[k];
-        gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
+        
+        // point the head of the list to the next of k if k is head
+        if (gcb->empty == k)
+            gcb->empty = gcb->next_empty[k];
+        else
+            gcb->next_empty[gcb->prev_empty[k]] = gcb->next_empty[k];
+
+        // if k is not the tail of the list then update the next of k
+        if (gcb->next_empty[k] != -1)
+            gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
+
+        gcb->next_empty[k] = -1;
+        gcb->prev_empty[k] = -1;
     }
 
     // record the latest update in gcb->code
