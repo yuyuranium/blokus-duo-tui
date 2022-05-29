@@ -426,15 +426,48 @@ static int test_place(gcb_t *gcb, tile_t *tile, int p)
     return (valid)? 0 : -1;
 }
 
-int can_place(gcb_t *gcb, int player)
+int can_place(gcb_t *gcb, int p)
 {
+    int r, m = 0;
+    tile_t *tile;
+
     // For each hand of player
-    // For each empty map entry
-    // Test place
     for (int s = SHAPE_M; s <= SHAPE_Z; ++s) {
-        
+        tile = gcb->hand[p][s];
+        if (!tile)
+            continue;
+
+        // For each empty map entry
+        int e = gcb->empty;
+        while (e != -1) {
+            tile->pos.y = e / N_ROW; tile->pos.x = e % N_ROW;
+
+            // For each possible rotation of the tile
+            for (r = 0; r <= TILE[tile->shape].rot_cnt; ++r) {
+                if (test_place(gcb, tile, p) == 0)
+                    goto recover_tile_and_return_true;
+
+                // For each possible flip of the tile
+                if (TILE[tile->shape].can_mir) {
+                    m = 1;
+                    mir_tile(tile);
+                    if (test_place(gcb, tile, p) == 0)
+                        goto recover_tile_and_return_true;
+
+                    m = 0;
+                    mir_tile(tile);
+                }
+                rot_tile(tile, 90);
+            }
+            rot_tile(tile, -90 * m);
+            e = gcb->next_empty[e];
+        }
     }
     return 0;
+recover_tile_and_return_true:
+    if (m) mir_tile(tile);
+    rot_tile(tile, -90 * r);
+    return 1;
 }
 
 gcb_t *init_gcb(int first)
@@ -544,9 +577,24 @@ int update(gcb_t *gcb, char *code)
     // TODO check if opponent can place or not
     // if not, p continues to play of if p cannot place either
     // then gameover, determine which player wins
-    gcb->turn = !gcb->turn;
-    gcb->sel = -1;
+    gcb->sel = -1;  // clear selected
     gcb->status = OK;
+
+    if (can_place(gcb, !p)) {
+        gcb->turn = !gcb->turn;  // it's opponent's turn
+        return 0;
+    }
+
+    if (can_place(gcb, p))
+        return 0; // opponent cannot place but p can, p continues to play
+
+    // Both players cannot place anymore, game terminates
+    if (gcb->score[0] > gcb->score[1])
+        gcb->status = EOG_P;  // player 0 wins
+    else if (gcb->score[0] < gcb->score[1])
+        gcb->status = EOG_Q;  // player 1 wins
+    else
+        gcb->status = EOG_T;  // tie
     return 0;
 }
 
