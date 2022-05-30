@@ -74,11 +74,17 @@ typedef struct {
     shape_t sel;
     tile_t *hand[2][SHAPE_Z + 1];
     int score[2];
+    // the linked list that link all the empty positions on the map
+    int empty;
     int next_empty[N_ROW * N_COL];
     int prev_empty[N_ROW * N_COL];
     int map[N_ROW][N_COL];
     char code[16];
     int status;
+    struct {
+        int shape;
+        coord_t pos;
+    } hint;
 } gcb_t;  // game control block
 
 extern const coord_t STARTING_POINT[2];

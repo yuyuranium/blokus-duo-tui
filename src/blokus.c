@@ -361,9 +361,9 @@ static int decode_tile(tile_t *tile, char *code)
     return 0;
 }
 
-static int test_place(gcb_t *gcb, tile_t *tile)
+static int test_place(gcb_t *gcb, tile_t *tile, int p)
 {
-    int p = gcb->turn, valid = 0;
+    int valid = 0;
     coord_t pos = tile->pos;
 
     // If the player hasn't place any tiles yet
@@ -426,6 +426,52 @@ static int test_place(gcb_t *gcb, tile_t *tile)
     return (valid)? 0 : -1;
 }
 
+int can_place(gcb_t *gcb, int p)
+{
+    int r, m = 0;
+    tile_t *tile;
+
+    // For each hand of player
+    for (int s = SHAPE_M; s <= SHAPE_Z; ++s) {
+        tile = gcb->hand[p][s];
+        if (!tile)
+            continue;
+
+        // For each empty map entry
+        int e = gcb->empty;
+        while (e != -1) {
+            tile->pos.y = e / N_ROW; tile->pos.x = e % N_ROW;
+
+            // For each possible rotation of the tile
+            for (r = 0; r <= TILE[tile->shape].rot_cnt; ++r) {
+                if (test_place(gcb, tile, p) == 0)
+                    goto recover_tile_and_return_true;
+
+                // For each possible flip of the tile
+                if (TILE[tile->shape].can_mir) {
+                    m = 1;
+                    mir_tile(tile);
+                    if (test_place(gcb, tile, p) == 0)
+                        goto recover_tile_and_return_true;
+
+                    m = 0;
+                    mir_tile(tile);
+                }
+                rot_tile(tile, 90);
+            }
+            rot_tile(tile, -90 * m);
+            e = gcb->next_empty[e];
+        }
+    }
+    return 0;
+recover_tile_and_return_true:
+    if (m) mir_tile(tile);
+    rot_tile(tile, -90 * r);
+    gcb->hint.pos = tile->pos;
+    gcb->hint.shape = tile->shape;
+    return 1;
+}
+
 gcb_t *init_gcb(int first)
 {
     gcb_t *gcb = malloc(sizeof(gcb_t));
@@ -442,6 +488,7 @@ gcb_t *init_gcb(int first)
             gcb->map[y][x] = -1;
         }
     }
+    gcb->empty = 0;
     for (int i = 0; i < 195; ++i)
         gcb->next_empty[i] = i + 1;
     gcb->next_empty[195] = -1;
@@ -449,6 +496,8 @@ gcb_t *init_gcb(int first)
         gcb->prev_empty[i] = i - 1;
     gcb->prev_empty[0] = -1;
     gcb->status = OK;
+    // generate hint on gcb initialization
+    can_place(gcb, first);
     return gcb;
 }
 
@@ -481,7 +530,7 @@ int is_valid(gcb_t *gcb)
     int p = gcb->turn;
     tile_t *tile;
     tile = gcb->hand[p][gcb->sel];
-    return test_place(gcb, tile) == 0;
+    return test_place(gcb, tile, p) == 0;
 }
 
 int update(gcb_t *gcb, char *code)
@@ -494,7 +543,7 @@ int update(gcb_t *gcb, char *code)
         return -1;
     }
 
-    if (test_place(gcb, tile) < 0)
+    if (test_place(gcb, tile, p) < 0)
         return -1;  // reject invalid update
 
     coord_t pos = tile->pos;
@@ -502,8 +551,19 @@ int update(gcb_t *gcb, char *code)
         int y = pos.y + tile->blks[i].y, x = pos.x + tile->blks[i].x;
         int k = N_ROW * y + x;
         gcb->map[y][x] = p;
-        gcb->next_empty[gcb->prev_empty[k]] = gcb->next_empty[k];
-        gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
+        
+        // point the head of the list to the next of k if k is head
+        if (gcb->empty == k)
+            gcb->empty = gcb->next_empty[k];
+        else
+            gcb->next_empty[gcb->prev_empty[k]] = gcb->next_empty[k];
+
+        // if k is not the tail of the list then update the next of k
+        if (gcb->next_empty[k] != -1)
+            gcb->prev_empty[gcb->next_empty[k]] = gcb->prev_empty[k];
+
+        gcb->next_empty[k] = -1;
+        gcb->prev_empty[k] = -1;
     }
 
     // record the latest update in gcb->code
@@ -521,9 +581,24 @@ int update(gcb_t *gcb, char *code)
     // TODO check if opponent can place or not
     // if not, p continues to play of if p cannot place either
     // then gameover, determine which player wins
-    gcb->turn = !gcb->turn;
-    gcb->sel = -1;
+    gcb->sel = -1;  // clear selected
     gcb->status = OK;
+
+    if (can_place(gcb, !p)) {
+        gcb->turn = !gcb->turn;  // it's opponent's turn
+        return 0;
+    }
+
+    if (can_place(gcb, p))
+        return 0; // opponent cannot place but p can, p continues to play
+
+    // Both players cannot place anymore, game terminates
+    if (gcb->score[0] > gcb->score[1])
+        gcb->status = EOG_P;  // player 0 wins
+    else if (gcb->score[0] < gcb->score[1])
+        gcb->status = EOG_Q;  // player 1 wins
+    else
+        gcb->status = EOG_T;  // tie
     return 0;
 }
 
