@@ -70,6 +70,7 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                  TILE[gcb->hint.shape].alpha, gcb->hint.pos.y, gcb->hint.pos.x);
         *color[6] = BLUE_PAIR;
         render_message_log(msg, color);
+        break;
     default:
         shift_msg(msg, color);
         snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
@@ -154,6 +155,7 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                  TILE[gcb->hint.shape].alpha, gcb->hint.pos.y, gcb->hint.pos.x);
         *color[6] = BLUE_PAIR;
         render_message_log(msg, color);
+        break;
     default:
         shift_msg(msg, color);
         snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
