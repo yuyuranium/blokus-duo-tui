@@ -200,6 +200,7 @@ int render_message_log(char *msg[7], int *color[7])
     init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
     init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
     init_pair(YELLOW_PAIR, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(BLUE_PAIR, COLOR_BLUE, COLOR_BLACK);
     
     mvprintw(17, 0, "╔══════════════════════════════════════════════════════╗");
     for (int i = 0; i < 7; ++i) {
@@ -219,8 +220,11 @@ int render_message_log(char *msg[7], int *color[7])
 int render_score_board()
 {
     mvprintw(17, 57, "╔══════════════╗");
-    mvprintw(18, 57, "║ Score Board  ║");
-    for (int i = 19; i < 25; ++i) {
+    mvprintw(18, 57, "║ >          < ║");
+    mvprintw(19, 57, "╚══════════════╝");
+    mvprintw(20, 57, "╔══════════════╗");
+    mvprintw(21, 57, "║ Score Board  ║");
+    for (int i = 22; i < 25; ++i) {
         mvprintw(i, 57, "║              ║");
     }
     mvprintw(25, 57, "╚══════════════╝");
@@ -228,22 +232,14 @@ int render_score_board()
 }
 
 int render_score(rcb_t *rcb) {
-    start_color();
-    init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
-    init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
     gcb_t *gcb = rcb->gcb;
-    for (int p = 0; p < 2; ++p) {
-        if (gcb->score[p] > gcb->score[!p]) {
-            attron(COLOR_PAIR(GREEN_PAIR));
-        } else if (gcb->score[p] < gcb->score[!p]) {
-            attron(COLOR_PAIR(RED_PAIR));
-        }
-        mvprintw(20 + p, 59, "Player %d: %2d", p, gcb->score[p]);
-        if (gcb->score[p] > gcb->score[!p]) {
-            attroff(COLOR_PAIR(GREEN_PAIR));
-        } else if (gcb->score[p] < gcb->score[!p]) {
-            attroff(COLOR_PAIR(RED_PAIR));
-        }
+    mvprintw(18, 61, "Player %d", gcb->turn);
+    if (gcb->score[0] > gcb->score[1]) {
+        mvprintw(23, 59, "Player 0: %2d", gcb->score[0]);
+        mvprintw(24, 59, "Player 1: %2d", gcb->score[1]);
+    } else {
+        mvprintw(23, 59, "Player 1: %2d", gcb->score[1]);
+        mvprintw(24, 59, "Player 0: %2d", gcb->score[0]);
     }
     return 0;
 }

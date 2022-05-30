@@ -44,7 +44,7 @@ int main() {
         if (c == ERR) continue;
         switch (rcb->state) {
             case S_CHOOSE_TILE:
-                choose_tile_handler(c, rcb);
+                choose_tile_handler(c, rcb, strs, colors);
                 break;
             case S_POSITIONING:
                 positioning_handler(c, rcb, strs, colors);

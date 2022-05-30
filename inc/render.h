@@ -11,6 +11,7 @@ extern const shape_t tile_relation[4][6];
 #define RED_PAIR 2
 #define GREEN_PAIR 3
 #define YELLOW_PAIR 4
+#define BLUE_PAIR 5
 
 #define MAX_LOG_LEN 53
 
