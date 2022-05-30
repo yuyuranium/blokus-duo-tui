@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int choose_tile_handler(int c, rcb_t *rcb)
+int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
     if (rcb->render_player == 0) {
         recover_tile_preview(rcb->gcb,
@@ -13,7 +13,6 @@ int choose_tile_handler(int c, rcb_t *rcb)
     gcb_t* gcb = rcb->gcb;
     switch (c) {
     case 'h':
-    case 'H':
     case KEY_LEFT:
         if (rcb->coord.x > 0) {
             int x = rcb->coord.x - 1;
@@ -24,7 +23,6 @@ int choose_tile_handler(int c, rcb_t *rcb)
         }
         break;
     case 'j':
-    case 'J':
     case KEY_DOWN:
         if (rcb->coord.y < 3) {
             int y = rcb->coord.y + 1;
@@ -33,7 +31,6 @@ int choose_tile_handler(int c, rcb_t *rcb)
         }
         break;
     case 'k':
-    case 'K':
     case KEY_UP:
         if (rcb->coord.y > 0) {
             int y = rcb->coord.y - 1;
@@ -42,7 +39,6 @@ int choose_tile_handler(int c, rcb_t *rcb)
         }
         break;
     case 'l':
-    case 'L':
     case KEY_RIGHT:
         if (rcb->coord.x < 5) {
             int x = rcb->coord.x + 1;
@@ -67,6 +63,13 @@ int choose_tile_handler(int c, rcb_t *rcb)
         render_board_preview(rcb);
         break;
     }
+    case 'H':
+        shift_msg(msg, color);
+        snprintf(msg[6], MAX_LOG_LEN,
+                 "[Hint] You could place tile \"%c\" at (%x, %x)",
+                 TILE[gcb->hint.shape].alpha, gcb->hint.pos.y, gcb->hint.pos.x);
+        *color[6] = BLUE_PAIR;
+        render_message_log(msg, color);
     }
     if (rcb->render_player == 0) {
         render_tile_preview(rcb->gcb,
@@ -79,33 +82,30 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
     recover_board_preview(rcb);
     tile_t *chosen = rcb->chosen;
+    gcb_t *gcb = rcb->gcb;
     coord_t tmp_pos = chosen->pos;
     int operation = 0;
     switch (c) {
     case 'h':
-    case 'H':
     case KEY_LEFT:
         chosen->pos.x--;
         break;
     case 'j':
-    case 'J':
     case KEY_DOWN:
         chosen->pos.y++;
         break;
     case 'k':
-    case 'K':
     case KEY_UP:
         chosen->pos.y--;
         break;
     case 'l':
-    case 'L':
     case KEY_RIGHT:
         chosen->pos.x++;
         break;
     case 'c':
     case 'C':
         rcb->render_player = !rcb->render_player;
-        render_tiles(rcb->gcb, rcb->render_player);
+        render_tiles(gcb, rcb->render_player);
         break;
     case 'r':
         operation = 1; 
@@ -128,7 +128,7 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         return 0;
     case ' ':
         shift_msg(msg, color);
-        if (!is_valid(rcb->gcb)) {
+        if (!is_valid(gcb)) {
             snprintf(msg[6], MAX_LOG_LEN,
                      "[Warning] You cannot place the tile here"); 
             *color[6] = YELLOW_PAIR;
@@ -141,6 +141,13 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                  chosen->pos.y, chosen->pos.x);
         render_message_log(msg, color);
         break;
+    case 'H':
+        shift_msg(msg, color);
+        snprintf(msg[6], MAX_LOG_LEN,
+                 "[Hint] You could place tile \"%c\" at (%x, %x)",
+                 TILE[gcb->hint.shape].alpha, gcb->hint.pos.y, gcb->hint.pos.x);
+        *color[6] = BLUE_PAIR;
+        render_message_log(msg, color);
     }
     for (int i = 0; i < TILE[chosen->shape].blk_cnt; ++i) {
         if (chosen->pos.x + chosen->blks[i].x < N_COL &&

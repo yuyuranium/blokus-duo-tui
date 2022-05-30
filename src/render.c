@@ -200,6 +200,7 @@ int render_message_log(char *msg[7], int *color[7])
     init_pair(RED_PAIR, COLOR_RED, COLOR_BLACK);
     init_pair(GREEN_PAIR, COLOR_GREEN, COLOR_BLACK);
     init_pair(YELLOW_PAIR, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(BLUE_PAIR, COLOR_BLUE, COLOR_BLACK);
     
     mvprintw(17, 0, "╔══════════════════════════════════════════════════════╗");
     for (int i = 0; i < 7; ++i) {
