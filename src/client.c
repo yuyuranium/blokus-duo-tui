@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
@@ -72,10 +73,12 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         render_message_log(msg, color);
         break;
     default:
-        shift_msg(msg, color);
-        snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
-        *color[6] = YELLOW_PAIR;
-        render_message_log(msg, color);
+        if (isprint(c)) {
+            shift_msg(msg, color);
+            snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
+            *color[6] = YELLOW_PAIR;
+            render_message_log(msg, color);
+        }
         break;
     }
     if (rcb->render_player == 0) {
@@ -157,10 +160,12 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         render_message_log(msg, color);
         break;
     default:
-        shift_msg(msg, color);
-        snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
-        *color[6] = YELLOW_PAIR;
-        render_message_log(msg, color);
+        if (isprint(c)) {
+            shift_msg(msg, color);
+            snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
+            *color[6] = YELLOW_PAIR;
+            render_message_log(msg, color);
+        }
         break;
     }
     for (int i = 0; i < TILE[chosen->shape].blk_cnt; ++i) {
