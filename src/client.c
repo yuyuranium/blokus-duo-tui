@@ -70,6 +70,12 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                  TILE[gcb->hint.shape].alpha, gcb->hint.pos.y, gcb->hint.pos.x);
         *color[6] = BLUE_PAIR;
         render_message_log(msg, color);
+    default:
+        shift_msg(msg, color);
+        snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
+        *color[6] = YELLOW_PAIR;
+        render_message_log(msg, color);
+        break;
     }
     if (rcb->render_player == 0) {
         render_tile_preview(rcb->gcb,
@@ -148,6 +154,12 @@ int positioning_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                  TILE[gcb->hint.shape].alpha, gcb->hint.pos.y, gcb->hint.pos.x);
         *color[6] = BLUE_PAIR;
         render_message_log(msg, color);
+    default:
+        shift_msg(msg, color);
+        snprintf(msg[6], MAX_LOG_LEN, "[Warning] Invalid operation \"%c\"", c);
+        *color[6] = YELLOW_PAIR;
+        render_message_log(msg, color);
+        break;
     }
     for (int i = 0; i < TILE[chosen->shape].blk_cnt; ++i) {
         if (chosen->pos.x + chosen->blks[i].x < N_COL &&
