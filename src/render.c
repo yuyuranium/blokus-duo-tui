@@ -219,8 +219,11 @@ int render_message_log(char *msg[7], int *color[7])
 int render_score_board()
 {
     mvprintw(17, 57, "╔══════════════╗");
-    mvprintw(18, 57, "║ Score Board  ║");
-    for (int i = 19; i < 25; ++i) {
+    mvprintw(18, 57, "║              ║");
+    mvprintw(19, 57, "╚══════════════╝");
+    mvprintw(20, 57, "╔══════════════╗");
+    mvprintw(21, 57, "║ Score Board  ║");
+    for (int i = 22; i < 25; ++i) {
         mvprintw(i, 57, "║              ║");
     }
     mvprintw(25, 57, "╚══════════════╝");
@@ -229,12 +232,13 @@ int render_score_board()
 
 int render_score(rcb_t *rcb) {
     gcb_t *gcb = rcb->gcb;
+    mvprintw(18, 59, "Turn Player%d", gcb->turn);
     if (gcb->score[0] > gcb->score[1]) {
-        mvprintw(20, 59, "Player 0: %2d", gcb->score[0]);
-        mvprintw(21, 59, "Player 1: %2d", gcb->score[1]);
+        mvprintw(23, 59, "Player 0: %2d", gcb->score[0]);
+        mvprintw(24, 59, "Player 1: %2d", gcb->score[1]);
     } else {
-        mvprintw(20, 59, "Player 1: %2d", gcb->score[1]);
-        mvprintw(21, 59, "Player 0: %2d", gcb->score[0]);
+        mvprintw(24, 59, "Player 1: %2d", gcb->score[1]);
+        mvprintw(23, 59, "Player 0: %2d", gcb->score[0]);
     }
     return 0;
 }
