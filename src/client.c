@@ -1,11 +1,14 @@
 #include "client.h"
 #include "blokus.h"
 #include "sock.h"
+#include "frame.h"
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <locale.h>
+#include <sys/socket.h>
+#include <time.h>
 
 int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
@@ -255,7 +258,6 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
     } 
     return 0;
 }
-
 int main(int argc, char *argv[])
 {
     --argc; ++argv;
@@ -277,6 +279,23 @@ int main(int argc, char *argv[])
     }
 
     int client_fd __attribute__((unused)) = open_clientfd(host, port);
+
+    // set request reqest pair signal
+    char *frame = get_frame(REQ_PAIR, 0, NULL);
+    char *recv_frame = malloc(FRAME_LEN);
+    while (1) {
+        send(client_fd, frame, FRAME_LEN, 0);
+        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
+            recv_frame[0] == PAIRED &&
+            recv_frame[1] == RES_OK) {
+            if (recv_frame[17] == (char)0xff) {  // pair failed
+                clock_t begin = clock();
+                while (clock() - begin < 10000);
+            } else if (recv_frame[17] == 0) {  // pair success
+                break;
+            }
+        }
+    }
 
     setlocale(LC_ALL, "");
     initscr();
@@ -324,5 +343,7 @@ int main(int argc, char *argv[])
                 break;
         }
     } while (1);
+    
+    endwin();
     return 0;
 }
