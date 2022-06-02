@@ -2,7 +2,7 @@
 #define _FRAME_H
 
 /*
-   |   0    |    1   | 2 - 19 |
+   |   0    |    1   | 2 - 17 |
    | opcode | status |  code  |
 */
 
