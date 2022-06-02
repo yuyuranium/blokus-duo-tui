@@ -15,8 +15,8 @@ enum OPCODE {
     REQ_PLACE
 };
 
-#define STATUS_INV -1
-#define STATUS_OK 1
-#define STATUS_FAILED 0
+#define OK 0
+#define INV -1
+#define BAD_REQ -2
 
 #endif
