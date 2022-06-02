@@ -1,9 +1,11 @@
 #include "client.h"
 #include "blokus.h"
+#include "sock.h"
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
 
 int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
@@ -251,5 +253,76 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         rcb->state = S_POSITIONING;
         break;
     } 
+    return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    --argc; ++argv;
+    char host[20];
+    char port[5];
+    
+    if (argc > 0 && **argv == '-' && (*argv)[1] == 'h') {
+        --argc; ++argv;
+        if (argc < 1)
+            return -1;
+        strncpy(host, *argv, strlen(*argv));
+    }
+    
+    if (argc > 0 && **argv == '-' && (*argv)[1] == 'p') {
+        --argc; ++argv;
+        if (argc < 1)
+            return -1;
+        strncpy(port, *argv, strlen(*argv));
+    }
+
+    int client_fd __attribute__((unused)) = open_clientfd(host, port);
+
+    setlocale(LC_ALL, "");
+    initscr();
+    init_all_colors();
+    keypad(stdscr, TRUE);
+    noecho();
+    curs_set(0);
+    
+    gcb_t* gcb = init_gcb(0);
+    char *strs[7];
+    int *colors[7];
+    for (int i = 0; i < 7; ++i) {
+        strs[i] = malloc(sizeof(char) * 70);
+        colors[i] = malloc(sizeof(int));
+        *colors[i] = 0; 
+    }
+    
+    rcb_t *rcb = malloc(sizeof(rcb_t));
+    rcb->gcb = gcb;
+    rcb->render_player = 0;
+    rcb->state = 0;
+    rcb->coord.x = 0;
+    rcb->coord.y = 0;
+    
+    render_board(gcb);
+    render_tiles(gcb, rcb->render_player);
+    render_message_log(strs, colors);
+    render_tile_preview(gcb, SHAPE_E);
+    render_score_board();
+    render_score(rcb);
+    
+    do {
+        refresh();
+        int c = getch();
+        if (c == ERR) continue;
+        switch (rcb->state) {
+            case S_CHOOSE_TILE:
+                choose_tile_handler(c, rcb, strs, colors);
+                break;
+            case S_POSITIONING:
+                positioning_handler(c, rcb, strs, colors);
+                break;
+            case S_PLACING:
+                placing_handler(c, rcb, strs, colors);
+                break;
+        }
+    } while (1);
     return 0;
 }
