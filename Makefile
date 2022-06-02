@@ -21,17 +21,17 @@ LDFLAGS = -lpthread -lncursesw
 
 all: $(OBJECTS) $(SERVER_TARGET) $(CLIENT_TARGET)
 
-$(SERVER_TARGET): $(addprefix $(BUILD_DIR)/, server.o blokus.o sock.o)
-	@$(CC) -o $@ $^ $(LDFLAGS)
+$(SERVER_TARGET): $(addprefix $(BUILD_DIR)/, server.o blokus.o sock.o frame.o)
 	@echo [LINK] $@
+	@$(CC) -o $@ $^ $(LDFLAGS)
 
-$(CLIENT_TARGET): $(addprefix $(BUILD_DIR)/, client.o blokus.o render.o sock.o)
-	@$(CC) -o $@ $^ $(LDFLAGS)
+$(CLIENT_TARGET): $(addprefix $(BUILD_DIR)/, client.o blokus.o render.o sock.o frame.o)
 	@echo [LINK] $@
+	@$(CC) -o $@ $^ $(LDFLAGS)
 
 $(OBJECTS): $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
-	@$(CC) -o $@ -c $< $(CFLAGS)
 	@echo [CXX] $< "-> .o"
+	@$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
 	rm -rf $(BUILD_DIR)
