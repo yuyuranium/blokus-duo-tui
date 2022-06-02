@@ -1,5 +1,5 @@
-#ifndef SOCK_H_
-#define SOCK_H_
+#ifndef _SOCK_H
+#define _SOCK_H
 
 int open_clientfd(char *hostname, char *port) __attribute__((unused));
 int open_listenfd(char *port) __attribute__((unused));
