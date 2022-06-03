@@ -293,15 +293,18 @@ int main(int argc, char *argv[])
     // set request reqest pair signal
     char *frame = get_frame(REQ_PAIR, 0, NULL);
     char *recv_frame = malloc(FRAME_LEN);
+    int opcode;
+    int status;
+    char* code = malloc(CODE_LEN);
     while (1) {
         send(client_fd, frame, FRAME_LEN, 0);
         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
-            recv_frame[0] == PAIRED &&
-            recv_frame[1] == RES_OK) {
-            if (recv_frame[2] == (char)0xff) {  // pair failed
+            !parse_frame(recv_frame, &opcode, &status, code) &&
+            opcode == PAIRED && status == RES_OK) {
+            if (code[0] == (char)0xff) {  // pair failed
                 clock_t begin = clock();
                 while (clock() - begin < TIMEOUT);
-            } else if (recv_frame[2] == 0) {  // pair success
+            } else if (code[0] == 0) {  // pair success
                 break;
             }
         }
@@ -314,12 +317,12 @@ int main(int argc, char *argv[])
     while (1) {
         send(client_fd, frame, FRAME_LEN, 0);
         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
-            recv_frame[0] == TURN &&
-            recv_frame[1] == RES_OK) {
-            if (recv_frame[2] == 0) {
+            !parse_frame(recv_frame, &opcode, &status, code) &&
+            opcode == TURN && status == RES_OK) {
+            if (code[0] == 0) {
                 gcb = init_gcb(0);
                 break;
-            } else if (recv_frame[2] == 1) {
+            } else if (code[0] == 1) {
                 gcb = init_gcb(1);
                 break;
             } else {
@@ -369,11 +372,10 @@ int main(int argc, char *argv[])
                         while (1) {
                             send(client_fd, frame, FRAME_LEN, 0);
                             if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-                                if (recv_frame[0] == RES &&
-                                    recv_frame[1] == RES_OK) {
+                                parse_frame(recv_frame, &opcode, &status, code);
+                                if (opcode == RES && status == RES_OK) {
                                     break;
-                                } else if (recv_frame[0] == RES &&
-                                           recv_frame[1] == RES_INV) {
+                                } else if (opcode == RES && status == RES_INV) {
                                     clock_t begin = clock();
                                     while (clock() - begin < TIMEOUT);
                                 }
@@ -387,12 +389,11 @@ int main(int argc, char *argv[])
             while (1) {
                 send(client_fd, frame, FRAME_LEN, 0);
                 if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-                    if (recv_frame[0] == RES &&
-                        recv_frame[1] == RES_OK) {
-                        update(gcb, &recv_frame[2]);
+                    parse_frame(recv_frame, &opcode, &status, code);
+                    if (opcode == RES && status == RES_OK) {
+                        update(gcb, code);
                         break;
-                    } else if (recv_frame[0] == RES &&
-                               recv_frame[1] == RES_INV) {
+                    } else if (opcode == RES && status == RES_INV) {
                         clock_t begin = clock();
                         while (clock() - begin < TIMEOUT);
                     }
