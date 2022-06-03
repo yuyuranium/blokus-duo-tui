@@ -287,6 +287,7 @@ int main(int argc, char *argv[])
     noecho();
     curs_set(0);
 
+    // Pairing
     int win_row, win_col;
     getmaxyx(stdscr, win_row, win_col);
     attron(A_BLINK);
@@ -302,7 +303,7 @@ int main(int argc, char *argv[])
             recv_frame[1] == RES_OK) {
             if (recv_frame[17] == (char)0xff) {  // pair failed
                 clock_t begin = clock();
-                while (clock() - begin < 10000);
+                while (clock() - begin < TIMEOUT);
             } else if (recv_frame[17] == 0) {  // pair success
                 break;
             }
@@ -311,8 +312,27 @@ int main(int argc, char *argv[])
     attroff(A_BLINK);
     clear();
 
+    gcb_t* gcb;
+    // Request turn
+    frame = get_frame(REQ_TURN, 0, NULL);
+    while (1) {
+        send(client_fd, frame, FRAME_LEN, 0);
+        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
+            recv_frame[0] == TURN &&
+            recv_frame[1] == RES_OK) {
+            if (recv_frame[17] == 0) {
+                gcb = init_gcb(0);
+                break;
+            } else if (recv_frame[17] == 1) {
+                gcb = init_gcb(1);
+                break;
+            } else {
+                clock_t begin = clock();
+                while (clock() - begin < TIMEOUT);
+            }
+        }
+    }
     
-    gcb_t* gcb = init_gcb(0);
     char *strs[7];
     int *colors[7];
     for (int i = 0; i < 7; ++i) {
