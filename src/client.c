@@ -279,7 +279,19 @@ int main(int argc, char *argv[])
     }
 
     int client_fd __attribute__((unused)) = open_clientfd(host, port);
+    
+    setlocale(LC_ALL, "");
+    initscr();
+    init_all_colors();
+    keypad(stdscr, TRUE);
+    noecho();
+    curs_set(0);
 
+    int win_row, win_col;
+    getmaxyx(stdscr, win_row, win_col);
+    attron(A_BLINK);
+    mvprintw(win_row / 2, (win_col - 21) / 2, "Pairing Opponents ...");
+    refresh();
     // set request reqest pair signal
     char *frame = get_frame(REQ_PAIR, 0, NULL);
     char *recv_frame = malloc(FRAME_LEN);
@@ -296,13 +308,9 @@ int main(int argc, char *argv[])
             }
         }
     }
+    attroff(A_BLINK);
+    clear();
 
-    setlocale(LC_ALL, "");
-    initscr();
-    init_all_colors();
-    keypad(stdscr, TRUE);
-    noecho();
-    curs_set(0);
     
     gcb_t* gcb = init_gcb(0);
     char *strs[7];
