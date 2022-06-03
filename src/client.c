@@ -221,6 +221,8 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
             snprintf(msg[6], MAX_LOG_LEN, "[Error] Board update failed"); 
             *color[6] = RED_PAIR;
             rcb->state = S_POSITIONING;
+            render_message_log(msg, color);
+            return -1;
         } else {
             snprintf(msg[6], MAX_LOG_LEN, "You have put the tile successfully"); 
             *color[6] = GREEN_PAIR;
@@ -243,8 +245,9 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                 if (tile_found) break;
             }
             render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
+            render_message_log(msg, color);
+            return 0;
         }
-        render_message_log(msg, color);
         break;
     case 'q':
     case 'n':
@@ -254,28 +257,32 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         *color[6] = YELLOW_PAIR;
         render_message_log(msg, color);
         rcb->state = S_POSITIONING;
+        return -1;
         break;
     } 
     return 0;
 }
 int main(int argc, char *argv[])
 {
-    --argc; ++argv;
-    char host[20];
-    char port[5];
+    char host[30] = {0};
+    char port[5] = {0};
     
+    --argc; ++argv;
     if (argc > 0 && **argv == '-' && (*argv)[1] == 'h') {
         --argc; ++argv;
         if (argc < 1)
             return -1;
         strncpy(host, *argv, strlen(*argv));
+        printf("%s\n", host);
     }
     
+    --argc; ++argv;
     if (argc > 0 && **argv == '-' && (*argv)[1] == 'p') {
         --argc; ++argv;
         if (argc < 1)
             return -1;
         strncpy(port, *argv, strlen(*argv));
+        printf("%s\n", port);
     }
 
     int client_fd __attribute__((unused)) = open_clientfd(host, port);
@@ -292,6 +299,10 @@ int main(int argc, char *argv[])
     getmaxyx(stdscr, win_row, win_col);
     attron(A_BLINK);
     mvprintw(win_row / 2, (win_col - 21) / 2, "Pairing Opponents ...");
+    attroff(A_BLINK);
+    mvprintw(win_row / 2 + 3, 
+             (win_col - strlen(host) - strlen(port) - 9) / 2, 
+             "server: %s:%s", host, port);
     refresh();
     // set request reqest pair signal
     char *frame = get_frame(REQ_PAIR, 0, NULL);
@@ -309,7 +320,6 @@ int main(int argc, char *argv[])
             }
         }
     }
-    attroff(A_BLINK);
     clear();
 
     gcb_t* gcb;
@@ -357,18 +367,51 @@ int main(int argc, char *argv[])
     
     do {
         refresh();
-        int c = getch();
-        if (c == ERR) continue;
-        switch (rcb->state) {
-            case S_CHOOSE_TILE:
-                choose_tile_handler(c, rcb, strs, colors);
-                break;
-            case S_POSITIONING:
-                positioning_handler(c, rcb, strs, colors);
-                break;
-            case S_PLACING:
-                placing_handler(c, rcb, strs, colors);
-                break;
+        if (gcb->turn == 0) {
+            int c = getch();
+            if (c == ERR) continue;
+            switch (rcb->state) {
+                case S_CHOOSE_TILE:
+                    choose_tile_handler(c, rcb, strs, colors);
+                    break;
+                case S_POSITIONING:
+                    positioning_handler(c, rcb, strs, colors);
+                    break;
+                case S_PLACING:
+                    if (placing_handler(c, rcb, strs, colors) == 0) {
+                        frame = get_frame(REQ_PLACE, 0, gcb->code);
+                        while (1) {
+                            send(client_fd, frame, FRAME_LEN, 0);
+                            if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                                if (recv_frame[0] == RES &&
+                                    recv_frame[1] == RES_OK) {
+                                    break;
+                                } else if (recv_frame[0] == RES &&
+                                           recv_frame[1] == RES_INV) {
+                                    clock_t begin = clock();
+                                    while (clock() - begin < TIMEOUT);
+                                }
+                            }
+                        }
+                    }
+                    break;
+            }
+        } else {  // wait for other player
+            frame = get_frame(REQ_STATUS, 0, NULL);
+            while (1) {
+                send(client_fd, frame, FRAME_LEN, 0);
+                if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                    if (recv_frame[0] == RES &&
+                        recv_frame[1] == RES_OK) {
+                        update(gcb, &recv_frame[2]);
+                        break;
+                    } else if (recv_frame[0] == RES &&
+                               recv_frame[1] == RES_INV) {
+                        clock_t begin = clock();
+                        while (clock() - begin < TIMEOUT);
+                    }
+                }
+            }
         }
     } while (1);
     
