@@ -7,6 +7,7 @@
 */
 
 #define FRAME_LEN 18
+#define CODE_LEN 16
 
 enum OPCODE {
     REQ_PAIR,
@@ -23,5 +24,6 @@ enum OPCODE {
 #define RES_BAD_REQ -2
 
 char *get_frame(int opcode, int status, char *code);
+int parse_frame(char *frame, int *opcode, int *status, char *code);
 
 #endif
