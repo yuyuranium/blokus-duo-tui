@@ -12,6 +12,7 @@ enum OPCODE {
     REQ_PAIR,
     PAIRED,
     REQ_TURN,
+    TURN,
     REQ_STATUS,
     RES,
     REQ_PLACE
