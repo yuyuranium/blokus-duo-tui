@@ -217,7 +217,7 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
     case 'Y':
     case 10:
         shift_msg(msg, color);
-        if (update(rcb->gcb, 0) < 0) {
+        if (update(gcb, 0) < 0) {
             snprintf(msg[6], MAX_LOG_LEN, "[Error] Board update failed"); 
             *color[6] = RED_PAIR;
             rcb->state = S_POSITIONING;
@@ -226,25 +226,11 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         } else {
             snprintf(msg[6], MAX_LOG_LEN, "You have put the tile successfully"); 
             *color[6] = GREEN_PAIR;
-            render_board(rcb->gcb);
-            render_tiles(rcb->gcb, 0);
+            render_board(gcb);
+            render_tiles(gcb, 1);
             render_score(rcb);
             rcb->state = S_CHOOSE_TILE;
 
-            // find next start candidate tile
-            int tile_found = 0;
-            for (int i = 0; i < 4; ++i) {
-                for (int j = 0; j < 6; ++j) {
-                    if (gcb->hand[0][tile_relation[i][j]]) {
-                        rcb->coord.x = j;
-                        rcb->coord.y = i;
-                        tile_found = 1;
-                        break;
-                    }
-                }
-                if (tile_found) break;
-            }
-            render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
             render_message_log(msg, color);
             return 0;
         }
@@ -412,6 +398,25 @@ int main(int argc, char *argv[])
                     }
                 }
             }
+            render_board(gcb);
+            render_tiles(gcb, 0);
+            render_score_board();
+            render_score(rcb);
+            
+            // find next start candidate tile
+            int tile_found = 0;
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 6; ++j) {
+                    if (gcb->hand[0][tile_relation[i][j]]) {
+                        rcb->coord.x = j;
+                        rcb->coord.y = i;
+                        tile_found = 1;
+                        break;
+                    }
+                }
+                if (tile_found) break;
+            }
+            render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
         }
     } while (1);
     
