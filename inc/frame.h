@@ -24,5 +24,6 @@ enum OPCODE {
 #define RES_BAD_REQ -2
 
 char *get_frame(int opcode, int status, char *code);
+int parse_frame(char *frame, int *opcode, int *status, char *code);
 
 #endif
