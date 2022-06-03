@@ -4,13 +4,13 @@
 
 char *get_frame(int opcode, int status, char *code) 
 {
-    char *msg = malloc(FRAME_LEN);
-    msg[0] = (char)opcode;
-    msg[1] = (char)status;
+    char *frame = malloc(FRAME_LEN);
+    frame[0] = (char)opcode;
+    frame[1] = (char)status;
     if (code) {
-        strncpy(&msg[2], code, FRAME_LEN - 2);
+        memcpy(&frame[2], code, CODE_LEN);
     } else {
-        memset(&msg[2], 0, FRAME_LEN - 2);
+        memset(&frame[2], 0, CODE_LEN);
     }
-    return msg;
+    return frame;
 }

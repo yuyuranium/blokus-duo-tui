@@ -7,6 +7,7 @@
 */
 
 #define FRAME_LEN 18
+#define CODE_LEN 16
 
 enum OPCODE {
     REQ_PAIR,
