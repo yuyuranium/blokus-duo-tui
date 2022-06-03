@@ -19,6 +19,7 @@ int parse_frame(char *frame, int *opcode, int *status, char *code)
 {
     *opcode = (int)frame[0];
     *status = (int)frame[1];
-    memcpy(code, &frame[2], CODE_LEN);
+    if (code)
+        memcpy(code, &frame[2], CODE_LEN);
     return 0;
 }
