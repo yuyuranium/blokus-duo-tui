@@ -298,10 +298,10 @@ int main(int argc, char *argv[])
         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
             recv_frame[0] == PAIRED &&
             recv_frame[1] == RES_OK) {
-            if (recv_frame[17] == (char)0xff) {  // pair failed
+            if (recv_frame[2] == (char)0xff) {  // pair failed
                 clock_t begin = clock();
                 while (clock() - begin < TIMEOUT);
-            } else if (recv_frame[17] == 0) {  // pair success
+            } else if (recv_frame[2] == 0) {  // pair success
                 break;
             }
         }
@@ -316,10 +316,10 @@ int main(int argc, char *argv[])
         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
             recv_frame[0] == TURN &&
             recv_frame[1] == RES_OK) {
-            if (recv_frame[17] == 0) {
+            if (recv_frame[2] == 0) {
                 gcb = init_gcb(0);
                 break;
-            } else if (recv_frame[17] == 1) {
+            } else if (recv_frame[2] == 1) {
                 gcb = init_gcb(1);
                 break;
             } else {
