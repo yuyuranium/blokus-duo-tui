@@ -253,3 +253,8 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
     } 
     return 0;
 }
+
+int main()
+{
+    return 0;
+}
