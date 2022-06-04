@@ -248,6 +248,44 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
     } 
     return 0;
 }
+
+int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
+{
+    gcb_t *gcb = rcb->gcb;
+    shift_msg(msgs, color);
+    switch (gcb->status) {
+    case EOG_P:
+        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have won the game! ::"); 
+        *color[6] = GREEN_PAIR;
+    case EOG_Q:
+        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have lose the game! ::"); 
+        *color[6] = RED_PAIR;
+    case EOG_T:
+        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! Tie game! ::"); 
+        *color[6] = YELLOW_PAIR;
+    default:
+        return -1;
+    }
+    do {
+        shift_msg(msgs, color);
+        snprintf(msgs[6], MAX_LOG_LEN, "Press 'n' to start new game."); 
+        shift_msg(msgs, color);
+        snprintf(msgs[6], MAX_LOG_LEN, "Press 'q' to quit the game."); 
+        render_message_log(msgs, color);
+
+        int c = getch();
+        if (c == ERR) continue;
+        switch (c) {
+        case 'c':
+            return 0;
+        case 'q':
+            exit(0);
+        }
+    } while (1);
+    
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     char host[30] = {0};
@@ -272,7 +310,8 @@ int main(int argc, char *argv[])
     }
 
     int client_fd __attribute__((unused)) = open_clientfd(host, port);
-    
+
+NEW_GAME:
     setlocale(LC_ALL, "");
     initscr();
     init_all_colors();
@@ -356,6 +395,17 @@ int main(int argc, char *argv[])
     
     do {
         refresh();
+
+        if (gcb->status == EOG_P ||
+            gcb->status == EOG_Q ||
+            gcb->status == EOG_T) {
+            if (!game_over_handler(rcb, strs, colors)) {
+                goto NEW_GAME;
+            } else {
+                printf("Invalid game over status, exit game!\n");
+                exit(-1);
+            }
+        }
         if (gcb->turn == 0) {
             int c = getch();
             if (c == ERR) continue;
