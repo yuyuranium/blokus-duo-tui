@@ -4,32 +4,53 @@
 #include <netdb.h>
 #include <pthread.h>
 #include "sock.h"
+#include "frame.h"
 
-#define STAT_WAITING 0
-#define STAT_INGAME 1
+#define STAT_INIT 0
+#define STAT_WAITING 1
+#define STAT_PAIRED 2
+#define STAT_INGAME 3
+#define STAT_EOG 4
 
-typedef struct player {
+typedef struct player player_t;
+typedef struct scb scb_t;
+
+struct player {
     long clientfd;
     int status;
-    struct player *next;
-} player_t;
+    // struct player *next;
+    scb_t *scb;
+};
 
-typedef struct waiting_queue {
-    player_t *head;
-    player_t *tail;
-} waiting_queue_t;
+struct scb {
+    player_t *p0, *p1;
+    player_t *turn;
+    // may add more attribute
+};  // service control block
 
 static pthread_mutex_t mutex;
 
-player_t *init_player(long clientfd)
+static player_t *waiting_player = NULL;
+
+static player_t *init_player(long clientfd)
 {
     player_t *p = malloc(sizeof(player_t));
     p->clientfd = clientfd;
-    p->next = NULL;
+    // p->next = NULL;
     return p;
 }
 
-int enqueue(waiting_queue_t *q, player_t *p)
+// Seems queue is not needed
+/*
+typedef struct player_queue {
+    player_t *head;
+    player_t *tail;
+} player_queue_t;
+
+static player_queue_t waiting_queue;
+
+
+static int enqueue(player_queue_t *q, player_t *p)
 {
     if (!q->head && !q->tail) {
         q->tail = q->head = p;
@@ -40,7 +61,7 @@ int enqueue(waiting_queue_t *q, player_t *p)
     return 0;
 }
 
-player_t *dequeue(waiting_queue_t *q)
+static player_t *dequeue(player_queue_t *q)
 {
     player_t *tmp = q->head;
     if (tmp) {
@@ -53,7 +74,7 @@ player_t *dequeue(waiting_queue_t *q)
     return tmp;
 }
 
-int rm_player(waiting_queue_t *q, player_t *p)
+static int rm_player(player_queue_t *q, player_t *p)
 {
     player_t **indirect = &q->head;
     while (*indirect != p)
@@ -68,6 +89,7 @@ int rm_player(waiting_queue_t *q, player_t *p)
     p->next = NULL;
     return 0;
 }
+*/
 
 static void die(char *msg)
 {
@@ -75,13 +97,37 @@ static void die(char *msg)
     exit(-1);
 }
 
+static void bad_request(long clientfd)
+{
+    char *res_frame = get_frame(-1, RES_BAD_REQ, NULL);
+    send(clientfd, res_frame, FRAME_LEN, 0);
+    free(res_frame);
+    printf("info: client fd %ld: bad request\n", clientfd);
+}
+
+static void invalid(long clientfd)
+{
+    char *res_frame = get_frame(-1, RES_INV, NULL);
+    send(clientfd, res_frame, FRAME_LEN, 0);
+    free(res_frame);
+    printf("info: client fd %ld: invalid\n", clientfd);
+}
+
+static void res(long clientfd, int opcode, char *code)
+{
+    char *res_frame = get_frame(opcode, RES_OK, code);
+    send(clientfd, res_frame, FRAME_LEN, 0);
+    free(res_frame);
+    printf("info: client fd %ld: ok with opcode: %d", clientfd, opcode);
+}
+
 static void *serve(void *argp)
 {
     long clientfd = (long) argp;
     player_t *p = init_player(clientfd);
     while (1) {
-        char req_buf[128];
-        int req_sz = recv(clientfd, req_buf, 128, 0);
+        char req_frame[FRAME_LEN];
+        int req_sz = recv(clientfd, req_frame, FRAME_LEN, 0);
         if (req_sz == 0) {
             printf("info: connection fd %ld shutdowned\n", clientfd);
             break;
@@ -90,6 +136,58 @@ static void *serve(void *argp)
         if (req_sz < 0) {
             printf("error: error occurred when communicating with fd %ld\n",
                    clientfd);
+            break;
+        }
+
+        int opcode, status;
+        char code[CODE_LEN];
+        if (parse_frame(req_frame, &opcode, &status, code) < 0) {
+            bad_request(clientfd);
+            continue;
+        }
+
+        printf("info: client fd %ld: request: (%d, %d, ",
+               clientfd, opcode, status);
+        for (int i = 0; i < CODE_LEN; ++i)
+            printf("(%x)", code[i]);
+        printf(")\n");
+
+        switch (opcode) {
+        case REQ_PAIR:
+            memset(code, 0, CODE_LEN);
+            switch (p->status) {
+            case STAT_INIT:
+            case STAT_EOG:
+                pthread_mutex_lock(&mutex);
+                if (!waiting_player) {
+                    p->status = STAT_WAITING;
+                    waiting_player = p;
+                    res(clientfd, PAIRED, code);
+                } else {
+                    code[0] = 1;
+                    p->status = STAT_PAIRED;
+                    waiting_player->status = STAT_PAIRED;
+                    // bind p and waiting_player
+                    res(clientfd, PAIRED, code);
+                }
+                pthread_mutex_unlock(&mutex);
+                break;
+            case STAT_WAITING:
+                res(clientfd, PAIRED, code);
+                break;
+            case STAT_PAIRED:
+                code[0] = 1;
+                res(clientfd, PAIRED, code);
+                break;
+            case STAT_INGAME:
+                invalid(clientfd);
+                break;
+            }
+            break;
+        case REQ_TURN:
+        case REQ_STATUS:
+        case REQ_PLACE:
+        default:
             break;
         }
     }
