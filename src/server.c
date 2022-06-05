@@ -77,16 +77,12 @@ static void *serve(void *argp)
         int req_sz = recv(clientfd, req_frame, FRAME_LEN, 0);
         if (req_sz == 0) {
             printf("info: connection fd %ld shutdowned\n", clientfd);
-            if (waiting_player == p)
-                waiting_player = NULL;
             break;
         }
 
         if (req_sz < 0) {
             printf("error: error occurred when communicating with fd %ld\n",
                    clientfd);
-            if (waiting_player == p)
-                waiting_player = NULL;
             break;
         }
 
@@ -201,6 +197,9 @@ static void *serve(void *argp)
             break;
         }
     }
+    if (waiting_player == p)
+        waiting_player = NULL;
+    free(p);
     return NULL;
 }
 
