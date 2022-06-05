@@ -351,10 +351,10 @@ NEW_GAME:
         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
             !parse_frame(recv_frame, &opcode, &status, code) &&
             opcode == PAIRED && status == RES_OK) {
-            if (code[0] == (char)0xff) {  // pair failed
+            if (code[0] == 0) {  // pair failed
                 clock_t begin = clock();
                 while (clock() - begin < TIMEOUT);
-            } else if (code[0] == 0) {  // pair success
+            } else if (code[0] == 1) {  // pair success
                 break;
             }
         }
