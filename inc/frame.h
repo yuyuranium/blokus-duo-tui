@@ -17,7 +17,8 @@ enum OPCODE {
     REQ_STATUS,
     RES,
     REQ_PLACE,
-    REQ_EOG
+    REQ_EOG,
+    RES_EOG
 };
 
 #define RES_OK 0
