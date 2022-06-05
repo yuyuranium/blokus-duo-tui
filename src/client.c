@@ -257,12 +257,15 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
     case EOG_P:
         snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have won the game! ::"); 
         *color[6] = GREEN_PAIR;
+        break;
     case EOG_Q:
         snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have lose the game! ::"); 
         *color[6] = RED_PAIR;
+        break;
     case EOG_T:
         snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! Tie game! ::"); 
         *color[6] = YELLOW_PAIR;
+        break;
     default:
         return -1;
     }
@@ -274,12 +277,13 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
         render_message_log(msgs, color);
 
         int c = getch();
-        if (c == ERR) continue;
         switch (c) {
-        case 'c':
+        case 'n':
             return 0;
         case 'q':
             exit(0);
+        default:
+            break;
         }
     } while (1);
     
@@ -432,8 +436,10 @@ NEW_GAME:
                     }
                     break;
             }
+            if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
+                break;
+            }
         } else {  // wait for other player
-WAIT: 
             frame = get_frame(REQ_STATUS, 0, NULL);
             while (1) {
                 send(client_fd, frame, FRAME_LEN, 0);
@@ -466,41 +472,42 @@ WAIT:
                 }
                 if (tile_found) break;
             }
-            if (gcb->status == EOG_P ||
-                gcb->status == EOG_Q ||
-                gcb->status == EOG_T) {
-                memset(code, 0, FRAME_LEN);
-                code[0] = gcb->status;
-                frame = get_frame(REQ_EOG, 0, code);
-                while (1) {
-                    send(client_fd, frame, FRAME_LEN, 0);
-                    if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-                        parse_frame(recv_frame, &opcode, &status, code);
-                        if (opcode == RES_EOG && status == RES_OK) {
-                            break;
-                        }
-                    }
-                    goto WAIT;
-                }
-                int game_result = game_over_handler(rcb, strs, colors);
-                free(frame);
-                free(recv_frame);
-                free(rcb->gcb);
-                free(rcb);
-                free(code);
-                for (int i = 0; i < 7; ++i) {
-                    free(strs[i]);
-                    free(colors[i]);
-                }
-                if (!game_result) {
-                    goto NEW_GAME;
-                } else {
-                    exit(0);
-                }
+            if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
+                break;
             }
             render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
         }
     } while (1);
+    
+    memset(code, 0, FRAME_LEN);
+    code[0] = gcb->status;
+    frame = get_frame(REQ_EOG, 0, code);
+    while (1) {
+        send(client_fd, frame, FRAME_LEN, 0);
+        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+            parse_frame(recv_frame, &opcode, &status, code);
+            if (opcode == RES_EOG && status == RES_OK) {
+                break;
+            }
+        }
+        clock_t begin = clock();
+        while (clock() - begin < TIMEOUT);
+    }
+    int game_result = game_over_handler(rcb, strs, colors);
+    free(frame);
+    free(recv_frame);
+    free(rcb->gcb);
+    free(rcb);
+    free(code);
+    for (int i = 0; i < 7; ++i) {
+        free(strs[i]);
+        free(colors[i]);
+    }
+    if (!game_result) {
+        goto NEW_GAME;
+    } else {
+        exit(0);
+    }
     
     endwin();
     return 0;
