@@ -20,6 +20,7 @@ struct player {
     int status;
     int turn;
     player_t *opp;
+    char code[CODE_LEN];
     // scb_t *scb;
 };
 
@@ -128,7 +129,7 @@ static void res(long clientfd, int opcode, char *code)
     char *res_frame = get_frame(opcode, RES_OK, code);
     send(clientfd, res_frame, FRAME_LEN, 0);
     free(res_frame);
-    printf("info: client fd %ld: ok with opcode: %d", clientfd, opcode);
+    printf("info: client fd %ld: ok with opcode: %d\n", clientfd, opcode);
 }
 
 static void *serve(void *argp)
@@ -173,7 +174,7 @@ static void *serve(void *argp)
                     p->status = STAT_WAITING;
                     p->turn = 0;
                     waiting_player = p;
-                    res(clientfd, PAIRED, code);
+                    res(clientfd, PAIRED, code);  // PAIRED, 0
                 } else {
                     code[0] = 1;
                     p->status = STAT_PAIRED;
@@ -183,16 +184,16 @@ static void *serve(void *argp)
                     p->opp = waiting_player;
                     waiting_player->opp = p;
                     waiting_player = NULL;
-                    res(clientfd, PAIRED, code);
+                    res(clientfd, PAIRED, code);  // PAIRED, 1
                 }
                 pthread_mutex_unlock(&mutex);
                 break;
             case STAT_WAITING:
-                res(clientfd, PAIRED, code);
+                res(clientfd, PAIRED, code);  // PAIRED, 0
                 break;
             case STAT_PAIRED:
                 code[0] = 1;
-                res(clientfd, PAIRED, code);
+                res(clientfd, PAIRED, code);  // PAIRED, 1
                 break;
             case STAT_INGAME:
                 invalid(clientfd);
@@ -200,8 +201,42 @@ static void *serve(void *argp)
             }
             break;
         case REQ_TURN:
+            memset(code, 0, CODE_LEN);
+            if (p->status != STAT_PAIRED) {
+                invalid(clientfd);
+                break;
+            }
+            code[0] = p->turn;
+            p->status = STAT_INGAME;
+            res(clientfd, TURN, code);
+            break;
         case REQ_STATUS:
+            // player must be in game
+            if (p->status != STAT_INGAME) {
+                invalid(clientfd);
+                break;
+            }
+
+            // It's p's turn, so recieve update from its opponent
+            if (p->turn == 0) {
+                res(clientfd, RES, p->code);
+            } else {
+                res(clientfd, RES, 0);  // Wait for opponent
+            }
+            break;
         case REQ_PLACE:
+            // player must be in game and it is p's turn
+            if (p->status != STAT_INGAME || p->turn != 0) {
+                invalid(clientfd);
+                break;
+            }
+
+            memcpy(p->opp->code, code, CODE_LEN);
+            p->opp->turn = 0;
+            p->turn = 1;
+
+            res(clientfd, RES, code);
+            break;
         default:
             break;
         }
