@@ -351,13 +351,12 @@ NEW_GAME:
         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
             !parse_frame(recv_frame, &opcode, &status, code) &&
             opcode == PAIRED && status == RES_OK) {
-            if (code[0] == 0) {  // pair failed
-                clock_t begin = clock();
-                while (clock() - begin < TIMEOUT);
-            } else if (code[0] == 1) {  // pair success
+            if (code[0] == 1) {  // pair success
                 break;
             }
         }
+        clock_t begin = clock();
+        while (clock() - begin < TIMEOUT);
     }
     clear();
 
@@ -444,11 +443,10 @@ NEW_GAME:
                                 parse_frame(recv_frame, &opcode, &status, code);
                                 if (opcode == RES && status == RES_OK) {
                                     break;
-                                } else if (opcode == RES && status == RES_INV) {
-                                    clock_t begin = clock();
-                                    while (clock() - begin < TIMEOUT);
                                 }
                             }
+                            clock_t begin = clock();
+                            while (clock() - begin < TIMEOUT);
                         }
                     }
                     if (gcb->status == EOG_P ||
@@ -464,9 +462,9 @@ NEW_GAME:
                                 if (opcode == RES_EOG && status == RES_OK) {
                                     break;
                                 }
-                                clock_t begin = clock();
-                                while (clock() - begin < TIMEOUT);
                             }
+                            clock_t begin = clock();
+                            while (clock() - begin < TIMEOUT);
                         }
                     }
                     break;
@@ -480,11 +478,10 @@ NEW_GAME:
                     if (opcode == RES && status == RES_OK) {
                         update(gcb, code);
                         break;
-                    } else if (opcode == RES && status == RES_INV) {
-                        clock_t begin = clock();
-                        while (clock() - begin < TIMEOUT);
                     }
                 }
+                clock_t begin = clock();
+                while (clock() - begin < TIMEOUT);
             }
             render_board(gcb);
             render_tiles(gcb, 0);
