@@ -309,7 +309,17 @@ int main(int argc, char *argv[])
         printf("%s\n", port);
     }
 
+    if (host[0] == 0 || port[0] == 0) {
+        printf("[Error] Server host or port not specified. Exit game.\n");
+        exit(-1);
+    }
+
     int client_fd __attribute__((unused)) = open_clientfd(host, port);
+    if (client_fd == -1) {
+        printf("[Error] Client file descriptor open failed.\n");
+        printf("[Error] Please check host and port again.\n");
+        exit(-1);
+    }
 
 NEW_GAME:
     setlocale(LC_ALL, "");
