@@ -13,7 +13,6 @@
 #define STAT_EOG 4
 
 typedef struct player player_t;
-// typedef struct scb scb_t;
 
 struct player {
     long clientfd;
@@ -22,17 +21,7 @@ struct player {
     int ended;
     player_t *opp;
     char code[CODE_LEN];
-    // scb_t *scb;
 };
-
-// May not need this
-/*
-struct scb {
-    player_t *p[2];
-    int turn;
-    // may add more attribute
-};  // service control block
-*/
 
 static pthread_mutex_t mutex;
 
@@ -42,66 +31,12 @@ static player_t *init_player(long clientfd)
 {
     player_t *p = malloc(sizeof(player_t));
     p->clientfd = clientfd;
-    // p->next = NULL;
+    p->status = STAT_INIT;
+    p->turn = -1;
+    p->ended = 0;
+    p->opp = NULL;
     return p;
 }
-
-// static scb_t *init_scb(player_t *p, player_t *q)
-// {
-//     scb_t *scb = malloc(sizeof(scb_t));
-//     return scb;
-// }
-
-// Seems queue is not needed
-/*
-typedef struct player_queue {
-    player_t *head;
-    player_t *tail;
-} player_queue_t;
-
-static player_queue_t waiting_queue;
-
-
-static int enqueue(player_queue_t *q, player_t *p)
-{
-    if (!q->head && !q->tail) {
-        q->tail = q->head = p;
-    } else {
-        q->tail->next = p;
-        q->tail = p;
-    }
-    return 0;
-}
-
-static player_t *dequeue(player_queue_t *q)
-{
-    player_t *tmp = q->head;
-    if (tmp) {
-        if (q->head == q->tail)  // only one player in the queue
-            q->head = q->tail = NULL;
-        else
-            q->head = q->head->next;
-        tmp->next = NULL;  // disconnect the player from the queue
-    }
-    return tmp;
-}
-
-static int rm_player(player_queue_t *q, player_t *p)
-{
-    player_t **indirect = &q->head;
-    while (*indirect != p)
-        indirect = &(*indirect)->next;
-
-    if (!*indirect)
-        return -1;
-
-    *indirect = p->next;
-    if (q->head == NULL)
-        q->tail = NULL;
-    p->next = NULL;
-    return 0;
-}
-*/
 
 static void die(char *msg)
 {
