@@ -13,20 +13,24 @@
 #define STAT_EOG 4
 
 typedef struct player player_t;
-typedef struct scb scb_t;
+// typedef struct scb scb_t;
 
 struct player {
     long clientfd;
     int status;
-    // struct player *next;
-    scb_t *scb;
+    int turn;
+    player_t *opp;
+    // scb_t *scb;
 };
 
+// May not need this
+/*
 struct scb {
-    player_t *p0, *p1;
-    player_t *turn;
+    player_t *p[2];
+    int turn;
     // may add more attribute
 };  // service control block
+*/
 
 static pthread_mutex_t mutex;
 
@@ -39,6 +43,12 @@ static player_t *init_player(long clientfd)
     // p->next = NULL;
     return p;
 }
+
+// static scb_t *init_scb(player_t *p, player_t *q)
+// {
+//     scb_t *scb = malloc(sizeof(scb_t));
+//     return scb;
+// }
 
 // Seems queue is not needed
 /*
@@ -161,13 +171,18 @@ static void *serve(void *argp)
                 pthread_mutex_lock(&mutex);
                 if (!waiting_player) {
                     p->status = STAT_WAITING;
+                    p->turn = 0;
                     waiting_player = p;
                     res(clientfd, PAIRED, code);
                 } else {
                     code[0] = 1;
                     p->status = STAT_PAIRED;
+                    p->turn = 1;
                     waiting_player->status = STAT_PAIRED;
                     // bind p and waiting_player
+                    p->opp = waiting_player;
+                    waiting_player->opp = p;
+                    waiting_player = NULL;
                     res(clientfd, PAIRED, code);
                 }
                 pthread_mutex_unlock(&mutex);
