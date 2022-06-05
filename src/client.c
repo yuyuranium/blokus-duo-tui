@@ -328,6 +328,7 @@ NEW_GAME:
     keypad(stdscr, TRUE);
     noecho();
     curs_set(0);
+    clear();
 
     // Pairing
     int win_row, win_col;
@@ -408,11 +409,20 @@ NEW_GAME:
         if (gcb->status == EOG_P ||
             gcb->status == EOG_Q ||
             gcb->status == EOG_T) {
-            if (!game_over_handler(rcb, strs, colors)) {
+            int game_result = game_over_handler(rcb, strs, colors);
+            free(frame);
+            free(recv_frame);
+            free(rcb->gcb);
+            free(rcb);
+            free(code);
+            for (int i = 0; i < 7; ++i) {
+                free(strs[i]);
+                free(colors[i]);
+            }
+            if (!game_result) {
                 goto NEW_GAME;
             } else {
-                printf("Invalid game over status, exit game!\n");
-                exit(-1);
+                exit(0);
             }
         }
         if (gcb->turn == 0) {
@@ -451,7 +461,7 @@ NEW_GAME:
                             send(client_fd, frame, FRAME_LEN, 0);
                             if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
                                 parse_frame(recv_frame, &opcode, &status, code);
-                                if (opcode == RES && status == RES_OK) {
+                                if (opcode == RES_EOG && status == RES_OK) {
                                     break;
                                 }
                                 clock_t begin = clock();
