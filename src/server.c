@@ -19,6 +19,7 @@ struct player {
     long clientfd;
     int status;
     int turn;
+    int ended;
     player_t *opp;
     char code[CODE_LEN];
     // scb_t *scb;
@@ -141,12 +142,16 @@ static void *serve(void *argp)
         int req_sz = recv(clientfd, req_frame, FRAME_LEN, 0);
         if (req_sz == 0) {
             printf("info: connection fd %ld shutdowned\n", clientfd);
+            if (waiting_player == p)
+                waiting_player = NULL;
             break;
         }
 
         if (req_sz < 0) {
             printf("error: error occurred when communicating with fd %ld\n",
                    clientfd);
+            if (waiting_player == p)
+                waiting_player = NULL;
             break;
         }
 
@@ -206,12 +211,13 @@ static void *serve(void *argp)
                 invalid(clientfd);
                 break;
             }
+
             code[0] = p->turn;
             p->status = STAT_INGAME;
             res(clientfd, TURN, code);
             break;
         case REQ_STATUS:
-            // player must be in game
+            // p must be in game
             if (p->status != STAT_INGAME) {
                 invalid(clientfd);
                 break;
@@ -219,25 +225,44 @@ static void *serve(void *argp)
 
             // It's p's turn, so recieve update from its opponent
             if (p->turn == 0) {
-                res(clientfd, RES, p->code);
+                if (p->ended) {
+                    p->status = STAT_EOG;  // p's opponent requested eog
+                    res(clientfd, RES_EOG, NULL);
+                } else {
+                    res(clientfd, RES, p->code);  // send update code
+                }
             } else {
                 res(clientfd, RES, 0);  // Wait for opponent
             }
             break;
         case REQ_PLACE:
-            // player must be in game and it is p's turn
+            // p must be in game and it must p's turn
             if (p->status != STAT_INGAME || p->turn != 0) {
                 invalid(clientfd);
                 break;
             }
 
-            memcpy(p->opp->code, code, CODE_LEN);
-            p->opp->turn = 0;
-            p->turn = 1;
+            memcpy(p->opp->code, code, CODE_LEN);  // opp can update using code
+            p->opp->turn = 0;  // it's oppponent's turn
+            p->turn = 1;  // it's not p's turn
 
             res(clientfd, RES, code);
             break;
+        case REQ_EOG:
+            // p must be in game and it must p's turn
+            if (p->status != STAT_INGAME || p->turn != 0) {
+                invalid(clientfd);
+                break;
+            }
+
+            p->status = STAT_EOG;  // end-of-game accepted
+            p->opp->turn = 0;
+            p->opp->ended = 1;  // opponent must end its game
+
+            res(clientfd, RES_EOG, code);
+            break;
         default:
+            bad_request(clientfd);
             break;
         }
     }
