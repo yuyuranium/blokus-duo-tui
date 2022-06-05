@@ -86,7 +86,7 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         }
         break;
     }
-    if (rcb->render_player == 0) {
+    if (gcb->turn == 0) {
         render_tile_preview(rcb->gcb,
                             tile_relation[rcb->coord.y][rcb->coord.x]);
     }
@@ -470,21 +470,23 @@ NEW_GAME:
                     break;
             }
         } else {  // wait for other player
+            
             frame = get_frame(REQ_STATUS, 0, NULL);
             while (1) {
                 send(client_fd, frame, FRAME_LEN, 0);
                 if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
                     parse_frame(recv_frame, &opcode, &status, code);
-                    if (opcode == RES && status == RES_OK) {
-                        update(gcb, code);
+                    if (opcode == RES && status == RES_OK &&
+                        !update(gcb, code)) {
                         break;
                     }
                 }
                 clock_t begin = clock();
                 while (clock() - begin < TIMEOUT);
             }
+            
             render_board(gcb);
-            render_tiles(gcb, 0);
+            render_tiles(gcb, gcb->turn);
             render_score_board();
             render_score(rcb);
             
