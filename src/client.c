@@ -364,11 +364,10 @@ NEW_GAME:
             } else if (code[0] == 1) {
                 gcb = init_gcb(1);
                 break;
-            } else {
-                clock_t begin = clock();
-                while (clock() - begin < TIMEOUT);
             }
         }
+        clock_t begin = clock();
+        while (clock() - begin < TIMEOUT);
     }
     
     char *strs[7];
@@ -429,6 +428,24 @@ NEW_GAME:
                                     clock_t begin = clock();
                                     while (clock() - begin < TIMEOUT);
                                 }
+                            }
+                        }
+                    }
+                    if (gcb->status == EOG_P ||
+                        gcb->status == EOG_Q ||
+                        gcb->status == EOG_T) {
+                        memset(code, 0, FRAME_LEN);
+                        code[0] = gcb->status;
+                        frame = get_frame(REQ_EOG, 0, code);
+                        while (1) {
+                            send(client_fd, frame, FRAME_LEN, 0);
+                            if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                                parse_frame(recv_frame, &opcode, &status, code);
+                                if (opcode == RES && status == RES_OK) {
+                                    break;
+                                }
+                                clock_t begin = clock();
+                                while (clock() - begin < TIMEOUT);
                             }
                         }
                     }
