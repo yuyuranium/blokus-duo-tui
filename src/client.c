@@ -479,7 +479,7 @@ NEW_GAME:
         }
     } while (1);
     
-    memset(code, 0, FRAME_LEN);
+    memset(code, 0, CODE_LEN);
     code[0] = gcb->status;
     frame = get_frame(REQ_EOG, 0, code);
     while (1) {
