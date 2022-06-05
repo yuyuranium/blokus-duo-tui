@@ -13,25 +13,15 @@
 #define STAT_EOG 4
 
 typedef struct player player_t;
-// typedef struct scb scb_t;
 
 struct player {
     long clientfd;
     int status;
     int turn;
+    int ended;
     player_t *opp;
     char code[CODE_LEN];
-    // scb_t *scb;
 };
-
-// May not need this
-/*
-struct scb {
-    player_t *p[2];
-    int turn;
-    // may add more attribute
-};  // service control block
-*/
 
 static pthread_mutex_t mutex;
 
@@ -41,66 +31,12 @@ static player_t *init_player(long clientfd)
 {
     player_t *p = malloc(sizeof(player_t));
     p->clientfd = clientfd;
-    // p->next = NULL;
+    p->status = STAT_INIT;
+    p->turn = -1;
+    p->ended = 0;
+    p->opp = NULL;
     return p;
 }
-
-// static scb_t *init_scb(player_t *p, player_t *q)
-// {
-//     scb_t *scb = malloc(sizeof(scb_t));
-//     return scb;
-// }
-
-// Seems queue is not needed
-/*
-typedef struct player_queue {
-    player_t *head;
-    player_t *tail;
-} player_queue_t;
-
-static player_queue_t waiting_queue;
-
-
-static int enqueue(player_queue_t *q, player_t *p)
-{
-    if (!q->head && !q->tail) {
-        q->tail = q->head = p;
-    } else {
-        q->tail->next = p;
-        q->tail = p;
-    }
-    return 0;
-}
-
-static player_t *dequeue(player_queue_t *q)
-{
-    player_t *tmp = q->head;
-    if (tmp) {
-        if (q->head == q->tail)  // only one player in the queue
-            q->head = q->tail = NULL;
-        else
-            q->head = q->head->next;
-        tmp->next = NULL;  // disconnect the player from the queue
-    }
-    return tmp;
-}
-
-static int rm_player(player_queue_t *q, player_t *p)
-{
-    player_t **indirect = &q->head;
-    while (*indirect != p)
-        indirect = &(*indirect)->next;
-
-    if (!*indirect)
-        return -1;
-
-    *indirect = p->next;
-    if (q->head == NULL)
-        q->tail = NULL;
-    p->next = NULL;
-    return 0;
-}
-*/
 
 static void die(char *msg)
 {
@@ -206,12 +142,13 @@ static void *serve(void *argp)
                 invalid(clientfd);
                 break;
             }
+
             code[0] = p->turn;
             p->status = STAT_INGAME;
             res(clientfd, TURN, code);
             break;
         case REQ_STATUS:
-            // player must be in game
+            // p must be in game
             if (p->status != STAT_INGAME) {
                 invalid(clientfd);
                 break;
@@ -219,28 +156,50 @@ static void *serve(void *argp)
 
             // It's p's turn, so recieve update from its opponent
             if (p->turn == 0) {
-                res(clientfd, RES, p->code);
+                if (p->ended) {
+                    p->status = STAT_EOG;  // p's opponent requested eog
+                    res(clientfd, RES_EOG, NULL);
+                } else {
+                    res(clientfd, RES, p->code);  // send update code
+                }
             } else {
                 res(clientfd, RES, 0);  // Wait for opponent
             }
             break;
         case REQ_PLACE:
-            // player must be in game and it is p's turn
+            // p must be in game and it must p's turn
             if (p->status != STAT_INGAME || p->turn != 0) {
                 invalid(clientfd);
                 break;
             }
 
-            memcpy(p->opp->code, code, CODE_LEN);
-            p->opp->turn = 0;
-            p->turn = 1;
+            memcpy(p->opp->code, code, CODE_LEN);  // opp can update using code
+            p->opp->turn = 0;  // it's oppponent's turn
+            p->turn = 1;  // it's not p's turn
 
             res(clientfd, RES, code);
             break;
+        case REQ_EOG:
+            // p must be in game and it must p's turn
+            if (p->status != STAT_INGAME || p->turn != 0) {
+                invalid(clientfd);
+                break;
+            }
+
+            p->status = STAT_EOG;  // end-of-game accepted
+            p->opp->turn = 0;
+            p->opp->ended = 1;  // opponent must end its game
+
+            res(clientfd, RES_EOG, code);
+            break;
         default:
+            bad_request(clientfd);
             break;
         }
     }
+    if (waiting_player == p)
+        waiting_player = NULL;
+    free(p);
     return NULL;
 }
 
