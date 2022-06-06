@@ -15,8 +15,10 @@ enum OPCODE {
     REQ_TURN,
     TURN,
     REQ_STATUS,
-    RES,
     REQ_PLACE,
+    RES,
+    REQ_PASS,
+    RES_PASS,
     REQ_EOG,
     RES_EOG
 };
