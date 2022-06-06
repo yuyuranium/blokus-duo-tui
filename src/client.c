@@ -407,32 +407,10 @@ NEW_GAME:
     if (gcb->turn == 0)
         render_tile_preview(gcb, SHAPE_E);
 
-    int last_player = !gcb->turn;
-    
     do {
         refresh();
 
         if (gcb->turn == 0) {
-            if (last_player == 0) {
-                frame = get_frame(REQ_STATUS, 0, gcb->code);
-                while (1) {
-                    send(client_fd, frame, FRAME_LEN, 0);
-                    if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-                        parse_frame(recv_frame, &opcode, &status, code);
-                        if (opcode == RES_PASS && status == RES_OK) {
-                            break;
-                        }
-                    }
-                    clock_t begin = clock();
-                    while (clock() - begin < TIMEOUT);
-                }
-                shift_msg(strs, colors);
-                snprintf(strs[6], MAX_LOG_LEN,
-                         "[Hint] Opponent have no more move, your turn.");
-                *colors[6] = BLUE_PAIR;
-                render_message_log(strs, colors);
-                refresh();
-            }
             int c = getch();
             switch (rcb->state) {
                 case S_CHOOSE_TILE:
@@ -455,7 +433,26 @@ NEW_GAME:
                             clock_t begin = clock();
                             while (clock() - begin < TIMEOUT);
                         }
-                        last_player = 0;
+                        if (gcb->turn == 0) {
+                            frame = get_frame(REQ_STATUS, 0, gcb->code);
+                            while (1) {
+                                send(client_fd, frame, FRAME_LEN, 0);
+                                if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                                    parse_frame(recv_frame, &opcode, &status, code);
+                                    if (opcode == RES_PASS && status == RES_OK) {
+                                        break;
+                                    }
+                                }
+                                clock_t begin = clock();
+                                while (clock() - begin < TIMEOUT);
+                            }
+                            shift_msg(strs, colors);
+                            snprintf(strs[6], MAX_LOG_LEN,
+                                     "[Hint] Opponent have no more move, your turn.");
+                            *colors[6] = BLUE_PAIR;
+                            render_message_log(strs, colors);
+                            refresh();
+                        }
                     }
                     break;
             }
@@ -521,7 +518,6 @@ NEW_GAME:
                 }
             }
             render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
-            last_player = 1;
         }
     } while (1);
     
