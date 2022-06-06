@@ -17,6 +17,7 @@ enum OPCODE {
     REQ_STATUS,
     REQ_PLACE,
     RES,
+    RES_OPPLEFT,
     REQ_PASS,
     RES_PASS,
     REQ_EOG,
