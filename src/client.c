@@ -1,9 +1,14 @@
 #include "client.h"
 #include "blokus.h"
+#include "sock.h"
+#include "frame.h"
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
+#include <sys/socket.h>
+#include <time.h>
 
 int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
 {
@@ -81,7 +86,7 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         }
         break;
     }
-    if (rcb->render_player == 0) {
+    if (gcb->turn == 0 && rcb->render_player == 0) {
         render_tile_preview(rcb->gcb,
                             tile_relation[rcb->coord.y][rcb->coord.x]);
     }
@@ -212,18 +217,291 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
     case 'Y':
     case 10:
         shift_msg(msg, color);
-        if (update(rcb->gcb, 0) < 0) {
+        if (update(gcb, 0) < 0) {
             snprintf(msg[6], MAX_LOG_LEN, "[Error] Board update failed"); 
             *color[6] = RED_PAIR;
             rcb->state = S_POSITIONING;
+            render_message_log(msg, color);
+            return -1;
         } else {
             snprintf(msg[6], MAX_LOG_LEN, "You have put the tile successfully"); 
             *color[6] = GREEN_PAIR;
-            render_board(rcb->gcb);
-            render_tiles(rcb->gcb, 0);
+            render_board(gcb);
+            render_tiles(gcb, gcb->turn);
             render_score(rcb);
             rcb->state = S_CHOOSE_TILE;
 
+            render_message_log(msg, color);
+            return 0;
+        }
+        break;
+    case 'q':
+    case 'n':
+    case 'N':
+        shift_msg(msg, color);
+        snprintf(msg[6], MAX_LOG_LEN, "Tile placement canceled"); 
+        *color[6] = YELLOW_PAIR;
+        render_message_log(msg, color);
+        rcb->state = S_POSITIONING;
+        return -1;
+    } 
+    return 0;
+}
+
+int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
+{
+    gcb_t *gcb = rcb->gcb;
+    shift_msg(msgs, color);
+    switch (gcb->status) {
+    case EOG_P:
+        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have won the game! ::"); 
+        *color[6] = GREEN_PAIR;
+        break;
+    case EOG_Q:
+        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have lose the game! ::"); 
+        *color[6] = RED_PAIR;
+        break;
+    case EOG_T:
+        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! Tie game! ::"); 
+        *color[6] = YELLOW_PAIR;
+        break;
+    default:
+        return -1;
+    }
+    do {
+        shift_msg(msgs, color);
+        snprintf(msgs[6], MAX_LOG_LEN, "Press 'n' to start new game."); 
+        shift_msg(msgs, color);
+        snprintf(msgs[6], MAX_LOG_LEN, "Press 'q' to quit the game."); 
+        render_message_log(msgs, color);
+
+        int c = getch();
+        switch (c) {
+        case 'n':
+            return 0;
+        case 'q':
+            return 1;
+        default:
+            break;
+        }
+    } while (1);
+    
+    return 0;
+}
+
+int main(int argc, char *argv[])
+{
+    char host[30] = {0};
+    char port[5] = {0};
+    
+    --argc; ++argv;
+    if (argc > 0 && **argv == '-' && (*argv)[1] == 'h') {
+        --argc; ++argv;
+        if (argc < 1)
+            return -1;
+        strncpy(host, *argv, strlen(*argv));
+        printf("%s\n", host);
+    }
+    
+    --argc; ++argv;
+    if (argc > 0 && **argv == '-' && (*argv)[1] == 'p') {
+        --argc; ++argv;
+        if (argc < 1)
+            return -1;
+        strncpy(port, *argv, strlen(*argv));
+        printf("%s\n", port);
+    }
+
+    if (host[0] == 0 || port[0] == 0) {
+        printf("[Error] Server host or port not specified. Exit game.\n");
+        exit(-1);
+    }
+
+    int client_fd __attribute__((unused)) = open_clientfd(host, port);
+    if (client_fd == -1) {
+        printf("[Error] Client file descriptor open failed.\n");
+        printf("[Error] Please check host and port again.\n");
+        exit(-1);
+    }
+
+NEW_GAME:
+    setlocale(LC_ALL, "");
+    initscr();
+    init_all_colors();
+    keypad(stdscr, TRUE);
+    noecho();
+    curs_set(0);
+    clear();
+
+    // Pairing
+    int win_row, win_col;
+    getmaxyx(stdscr, win_row, win_col);
+    attron(A_BLINK);
+    mvprintw(win_row / 2, (win_col - 21) / 2, "Pairing Opponents ...");
+    attroff(A_BLINK);
+    mvprintw(win_row / 2 + 3, 
+             (win_col - strlen(host) - strlen(port) - 9) / 2, 
+             "server: %s:%s", host, port);
+    refresh();
+    // set request reqest pair signal
+    char *frame = get_frame(REQ_PAIR, 0, NULL);
+    char *recv_frame = malloc(FRAME_LEN);
+    int opcode;
+    int status;
+    char *code = malloc(CODE_LEN);
+    while (1) {
+        send(client_fd, frame, FRAME_LEN, 0);
+        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
+            !parse_frame(recv_frame, &opcode, &status, code) &&
+            opcode == PAIRED && status == RES_OK) {
+            if (code[0] == 1) {  // pair success
+                break;
+            }
+        }
+        clock_t begin = clock();
+        while (clock() - begin < TIMEOUT);
+    }
+    clear();
+
+    gcb_t* gcb;
+    // Request turn
+    frame = get_frame(REQ_TURN, 0, NULL);
+    while (1) {
+        send(client_fd, frame, FRAME_LEN, 0);
+        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
+            !parse_frame(recv_frame, &opcode, &status, code) &&
+            opcode == TURN && status == RES_OK) {
+            if (code[0] == 0) {
+                gcb = init_gcb(0);
+                break;
+            } else if (code[0] == 1) {
+                gcb = init_gcb(1);
+                break;
+            }
+        }
+        clock_t begin = clock();
+        while (clock() - begin < TIMEOUT);
+    }
+    
+    char *strs[7];
+    int *colors[7];
+    for (int i = 0; i < 7; ++i) {
+        strs[i] = malloc(sizeof(char) * MAX_LOG_LEN);
+        colors[i] = malloc(sizeof(int));
+        *colors[i] = 0; 
+    }
+    
+    rcb_t *rcb = malloc(sizeof(rcb_t));
+    rcb->gcb = gcb;
+    rcb->render_player = 0;
+    rcb->state = 0;
+    rcb->coord.x = 0;
+    rcb->coord.y = 0;
+    
+    render_board(gcb);
+    render_tiles(gcb, gcb->turn);
+    render_message_log(strs, colors);
+    render_score_board();
+    render_score(rcb);
+    if (gcb->turn == 0)
+        render_tile_preview(gcb, SHAPE_E);
+
+    do {
+        refresh();
+
+        if (gcb->turn == 0) {
+            int c = getch();
+            switch (rcb->state) {
+            case S_CHOOSE_TILE:
+                choose_tile_handler(c, rcb, strs, colors);
+                break;
+            case S_POSITIONING:
+                positioning_handler(c, rcb, strs, colors);
+                break;
+            case S_PLACING:
+                if (placing_handler(c, rcb, strs, colors) == 0) {
+                    frame = get_frame(REQ_PLACE, 0, gcb->code);
+                    while (1) {
+                        send(client_fd, frame, FRAME_LEN, 0);
+                        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                            parse_frame(recv_frame, &opcode, &status, code);
+                            if (opcode == RES && status == RES_OK) {
+                                break;
+                            }
+                        }
+                        clock_t begin = clock();
+                        while (clock() - begin < TIMEOUT);
+                    }
+                    if (gcb->turn == 0) {
+                        frame = get_frame(REQ_STATUS, 0, gcb->code);
+                        while (1) {
+                            send(client_fd, frame, FRAME_LEN, 0);
+                            if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                                parse_frame(recv_frame, &opcode, &status, code);
+                                if (opcode == RES_PASS && status == RES_OK) {
+                                    break;
+                                }
+                            }
+                            clock_t begin = clock();
+                            while (clock() - begin < TIMEOUT);
+                        }
+                        shift_msg(strs, colors);
+                        snprintf(strs[6], MAX_LOG_LEN,
+                                 "[Hint] Opponent have no more move, your turn.");
+                        *colors[6] = BLUE_PAIR;
+                        render_message_log(strs, colors);
+                        refresh();
+                    }
+                }
+                break;
+            }
+            if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
+                break;
+            }
+        } else {  // wait for other player
+            frame = get_frame(REQ_STATUS, 0, NULL);
+            while (1) {
+                send(client_fd, frame, FRAME_LEN, 0);
+                if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                    parse_frame(recv_frame, &opcode, &status, code);
+                    if (opcode == RES && status == RES_OK && code[0] != -1) {
+                        update(gcb, code);
+                        break;
+                    }
+                }
+                clock_t begin = clock();
+                while (clock() - begin < TIMEOUT);
+            }
+
+            if (gcb->turn == 1) {
+                // player 0 has no more move
+                frame = get_frame(REQ_PASS, 0, NULL);
+                while (1) {
+                    send(client_fd, frame, FRAME_LEN, 0);
+                    if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                        parse_frame(recv_frame, &opcode, &status, code);
+                        if (opcode == RES_PASS && status == RES_OK) {
+                            break;
+                        }
+                    }
+                    clock_t begin = clock();
+                    while (clock() - begin < TIMEOUT);
+                }
+                shift_msg(strs, colors);
+                snprintf(strs[6], MAX_LOG_LEN,
+                         "[Hint] You have no more moves, passed.");
+                *colors[6] = BLUE_PAIR;
+                render_message_log(strs, colors);
+            }
+            
+            render_board(gcb);
+            render_tiles(gcb, gcb->turn);
+            render_score_board();
+            render_score(rcb);
+            
+            if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
+                break;
+            }
             // find next start candidate tile
             int tile_found = 0;
             for (int i = 0; i < 4; ++i) {
@@ -239,17 +517,36 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
             }
             render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
         }
-        render_message_log(msg, color);
-        break;
-    case 'q':
-    case 'n':
-    case 'N':
-        shift_msg(msg, color);
-        snprintf(msg[6], MAX_LOG_LEN, "Tile placement canceled"); 
-        *color[6] = YELLOW_PAIR;
-        render_message_log(msg, color);
-        rcb->state = S_POSITIONING;
-        break;
-    } 
+    } while (1);
+    
+    memset(code, 0, CODE_LEN);
+    code[0] = gcb->status;
+    frame = get_frame(REQ_EOG, 0, code);
+    while (1) {
+        send(client_fd, frame, FRAME_LEN, 0);
+        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+            parse_frame(recv_frame, &opcode, &status, code);
+            if (opcode == RES_EOG && status == RES_OK) {
+                break;
+            }
+        }
+        clock_t begin = clock();
+        while (clock() - begin < TIMEOUT);
+    }
+    int game_result = game_over_handler(rcb, strs, colors);
+    free(frame);
+    free(recv_frame);
+    free(rcb->gcb);
+    free(rcb);
+    free(code);
+    for (int i = 0; i < 7; ++i) {
+        free(strs[i]);
+        free(colors[i]);
+    }
+    if (!game_result) {
+        goto NEW_GAME;
+    }
+    
+    endwin();
     return 0;
 }
