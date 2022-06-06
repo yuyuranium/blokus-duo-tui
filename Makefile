@@ -1,4 +1,4 @@
-CC := clang
+CC := gcc
 
 INC_DIR := inc
 SRC_DIR := src

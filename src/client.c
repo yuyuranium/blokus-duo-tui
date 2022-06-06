@@ -244,7 +244,6 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         render_message_log(msg, color);
         rcb->state = S_POSITIONING;
         return -1;
-        break;
     } 
     return 0;
 }
@@ -281,7 +280,7 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
         case 'n':
             return 0;
         case 'q':
-            exit(0);
+            return 1;
         default:
             break;
         }
@@ -349,7 +348,7 @@ NEW_GAME:
     char *recv_frame = malloc(FRAME_LEN);
     int opcode;
     int status;
-    char* code = malloc(CODE_LEN);
+    char *code = malloc(CODE_LEN);
     while (1) {
         send(client_fd, frame, FRAME_LEN, 0);
         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0 &&
@@ -387,7 +386,7 @@ NEW_GAME:
     char *strs[7];
     int *colors[7];
     for (int i = 0; i < 7; ++i) {
-        strs[i] = malloc(sizeof(char) * 70);
+        strs[i] = malloc(sizeof(char) * MAX_LOG_LEN);
         colors[i] = malloc(sizeof(int));
         *colors[i] = 0; 
     }
@@ -413,48 +412,48 @@ NEW_GAME:
         if (gcb->turn == 0) {
             int c = getch();
             switch (rcb->state) {
-                case S_CHOOSE_TILE:
-                    choose_tile_handler(c, rcb, strs, colors);
-                    break;
-                case S_POSITIONING:
-                    positioning_handler(c, rcb, strs, colors);
-                    break;
-                case S_PLACING:
-                    if (placing_handler(c, rcb, strs, colors) == 0) {
-                        frame = get_frame(REQ_PLACE, 0, gcb->code);
+            case S_CHOOSE_TILE:
+                choose_tile_handler(c, rcb, strs, colors);
+                break;
+            case S_POSITIONING:
+                positioning_handler(c, rcb, strs, colors);
+                break;
+            case S_PLACING:
+                if (placing_handler(c, rcb, strs, colors) == 0) {
+                    frame = get_frame(REQ_PLACE, 0, gcb->code);
+                    while (1) {
+                        send(client_fd, frame, FRAME_LEN, 0);
+                        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                            parse_frame(recv_frame, &opcode, &status, code);
+                            if (opcode == RES && status == RES_OK) {
+                                break;
+                            }
+                        }
+                        clock_t begin = clock();
+                        while (clock() - begin < TIMEOUT);
+                    }
+                    if (gcb->turn == 0) {
+                        frame = get_frame(REQ_STATUS, 0, gcb->code);
                         while (1) {
                             send(client_fd, frame, FRAME_LEN, 0);
                             if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
                                 parse_frame(recv_frame, &opcode, &status, code);
-                                if (opcode == RES && status == RES_OK) {
+                                if (opcode == RES_PASS && status == RES_OK) {
                                     break;
                                 }
                             }
                             clock_t begin = clock();
                             while (clock() - begin < TIMEOUT);
                         }
-                        if (gcb->turn == 0) {
-                            frame = get_frame(REQ_STATUS, 0, gcb->code);
-                            while (1) {
-                                send(client_fd, frame, FRAME_LEN, 0);
-                                if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-                                    parse_frame(recv_frame, &opcode, &status, code);
-                                    if (opcode == RES_PASS && status == RES_OK) {
-                                        break;
-                                    }
-                                }
-                                clock_t begin = clock();
-                                while (clock() - begin < TIMEOUT);
-                            }
-                            shift_msg(strs, colors);
-                            snprintf(strs[6], MAX_LOG_LEN,
-                                     "[Hint] Opponent have no more move, your turn.");
-                            *colors[6] = BLUE_PAIR;
-                            render_message_log(strs, colors);
-                            refresh();
-                        }
+                        shift_msg(strs, colors);
+                        snprintf(strs[6], MAX_LOG_LEN,
+                                 "[Hint] Opponent have no more move, your turn.");
+                        *colors[6] = BLUE_PAIR;
+                        render_message_log(strs, colors);
+                        refresh();
                     }
-                    break;
+                }
+                break;
             }
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
@@ -502,20 +501,19 @@ NEW_GAME:
             
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
-            } else {
-                // find next start candidate tile
-                int tile_found = 0;
-                for (int i = 0; i < 4; ++i) {
-                    for (int j = 0; j < 6; ++j) {
-                        if (gcb->hand[0][tile_relation[i][j]]) {
-                            rcb->coord.x = j;
-                            rcb->coord.y = i;
-                            tile_found = 1;
-                            break;
-                        }
+            }
+            // find next start candidate tile
+            int tile_found = 0;
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 6; ++j) {
+                    if (gcb->hand[0][tile_relation[i][j]]) {
+                        rcb->coord.x = j;
+                        rcb->coord.y = i;
+                        tile_found = 1;
+                        break;
                     }
-                    if (tile_found) break;
                 }
+                if (tile_found) break;
             }
             render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
         }
@@ -547,8 +545,6 @@ NEW_GAME:
     }
     if (!game_result) {
         goto NEW_GAME;
-    } else {
-        exit(0);
     }
     
     endwin();
