@@ -99,9 +99,9 @@ static void *serve(void *argp)
 
         printf("info: client fd %ld: request: (%d, %d, ",
                clientfd, opcode, status);
-        printf("%x", code[0]);
+        printf("%02x", code[0] & 0xff);
         for (int i = 1; i < CODE_LEN; ++i)
-            printf(":%02x", code[i]);
+            printf(":%02x", code[i] & 0xff);
         printf(")\n");
 
         if (p->opp_left) {
