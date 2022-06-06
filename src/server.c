@@ -107,7 +107,7 @@ static void *serve(void *argp)
         if (p->opp_left) {
             p->opp_left = 0;             // reset flag
             p->status = STAT_INIT;       // p goes back to init
-            res(clientfd, RES_OPPL, 0);  // inform client that its opp left
+            res(clientfd, RES_OPPLEFT, 0);  // inform client that its opp left
             free(p->opp);
             continue;
         }
