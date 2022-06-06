@@ -17,16 +17,16 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                              tile_relation[rcb->coord.y][rcb->coord.x]);
     }
     gcb_t* gcb = rcb->gcb;
-    int k = rcb->coord.y * 6 + rcb->coord.x;
+    int k = rcb->coord.y * 6 + rcb->coord.x, j = k;  // j is original position
 
     switch (c) {
     case 'h':
     case KEY_LEFT:
         do {
             k = (k == 0)? 23 : k - 1;
-        } while (!gcb->hand[0][tile_relation[0][k]] ||
+        } while (k != j && (!gcb->hand[0][tile_relation[0][k]] ||
                  tile_relation[rcb->coord.y][rcb->coord.x] ==
-                 tile_relation[0][k]);
+                 tile_relation[0][k]));
         rcb->coord.y = k / 6;
         rcb->coord.x = k % 6;
         break;
@@ -35,9 +35,9 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         k += 6;
         if (k >= 24)
             k -= 24;
-        while (!gcb->hand[0][tile_relation[0][k]] ||
+        while (k != j && (!gcb->hand[0][tile_relation[0][k]] ||
                tile_relation[rcb->coord.y][rcb->coord.x] ==
-               tile_relation[0][k]) {
+               tile_relation[0][k])) {
             k++;
         }
         rcb->coord.y = k / 6;
@@ -48,9 +48,9 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         k -= 6;
         if (k < 0)
             k += 24;
-        while (!gcb->hand[0][tile_relation[0][k]] ||
+        while (k != j && (!gcb->hand[0][tile_relation[0][k]] ||
                tile_relation[rcb->coord.y][rcb->coord.x] ==
-               tile_relation[0][k]) {
+               tile_relation[0][k])) {
             k = (k == 0)? 23 : k - 1;
         }
         rcb->coord.y = k / 6;
@@ -61,9 +61,9 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
     case KEY_RIGHT:
         do {
             k = (k == 23)? 0 : k + 1;
-        } while (!gcb->hand[0][tile_relation[0][k]] ||
+        } while (k != j && (!gcb->hand[0][tile_relation[0][k]] ||
                  tile_relation[rcb->coord.y][rcb->coord.x] ==
-                 tile_relation[0][k]);
+                 tile_relation[0][k]));
         rcb->coord.y = k / 6;
         rcb->coord.x = k % 6;
         break;
