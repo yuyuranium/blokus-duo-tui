@@ -17,42 +17,79 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
                              tile_relation[rcb->coord.y][rcb->coord.x]);
     }
     gcb_t* gcb = rcb->gcb;
+    int k = rcb->coord.y * 6 + rcb->coord.x; //, y, x;
+
     switch (c) {
     case 'h':
     case KEY_LEFT:
-        if (rcb->coord.x > 0) {
-            int x = rcb->coord.x - 1;
-            if (tile_relation[rcb->coord.y][rcb->coord.x] == 
-                tile_relation[rcb->coord.y][x]) x--;
-            while (x >= 0 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x--;
-            rcb->coord.x = (x >= 0)? x : rcb->coord.x;
-        }
+        // if (rcb->coord.x > 0) {
+        //     int x = rcb->coord.x - 1;
+        //     if (tile_relation[rcb->coord.y][rcb->coord.x] == 
+        //         tile_relation[rcb->coord.y][x]) x--;
+        //     while (x >= 0 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x--;
+        //     rcb->coord.x = (x >= 0)? x : rcb->coord.x;
+        // }
+        do {
+            k = (k == 0)? 23 : k - 1;
+        } while (!gcb->hand[0][tile_relation[0][k]] ||
+                 tile_relation[rcb->coord.y][rcb->coord.x] ==
+                 tile_relation[0][k]);
+        rcb->coord.y = k / 6;
+        rcb->coord.x = k % 6;
         break;
     case 'j':
     case KEY_DOWN:
-        if (rcb->coord.y < 3) {
-            int y = rcb->coord.y + 1;
-            while (y <= 3 && !gcb->hand[0][tile_relation[y][rcb->coord.x]]) y++;
-            rcb->coord.y = (y <= 3)? y : rcb->coord.y;
+        // if (rcb->coord.y < 3) {
+        //     int y = rcb->coord.y + 1;
+        //     while (y <= 3 && !gcb->hand[0][tile_relation[y][rcb->coord.x]]) y++;
+        //     rcb->coord.y = (y <= 3)? y : rcb->coord.y;
+        // }
+        k += 6;
+        if (k >= 24)
+            k -= 24;
+        while (!gcb->hand[0][tile_relation[0][k]] ||
+               tile_relation[rcb->coord.y][rcb->coord.x] ==
+               tile_relation[0][k]) {
+            k++;
         }
+        rcb->coord.y = k / 6;
+        rcb->coord.x = k % 6;
         break;
     case 'k':
     case KEY_UP:
-        if (rcb->coord.y > 0) {
-            int y = rcb->coord.y - 1;
-            while (y >= 0 && !gcb->hand[0][tile_relation[y][rcb->coord.x]]) y--;
-            rcb->coord.y = (y >= 0)? y : rcb->coord.y;
+        // if (rcb->coord.y > 0) {
+        //     int y = rcb->coord.y - 1;
+        //     while (y >= 0 && !gcb->hand[0][tile_relation[y][rcb->coord.x]]) y--;
+        //     rcb->coord.y = (y >= 0)? y : rcb->coord.y;
+        // }
+        k -= 6;
+        if (k < 0)
+            k += 24;
+        while (!gcb->hand[0][tile_relation[0][k]] ||
+               tile_relation[rcb->coord.y][rcb->coord.x] ==
+               tile_relation[0][k]) {
+            k = (k == 0)? 23 : k - 1;
         }
+        rcb->coord.y = k / 6;
+        rcb->coord.x = k % 6;
+        break;
         break;
     case 'l':
     case KEY_RIGHT:
-        if (rcb->coord.x < 5) {
-            int x = rcb->coord.x + 1;
-            if (tile_relation[rcb->coord.y][rcb->coord.x] == 
-                tile_relation[rcb->coord.y][x]) x++;
-            while (x <= 5 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x++;
-            rcb->coord.x = (x <= 5)? x : rcb->coord.x;
-        }
+        // if (rcb->coord.x < 5) {
+        //     int x = rcb->coord.x + 1;
+        //     if (tile_relation[rcb->coord.y][rcb->coord.x] ==
+        //         tile_relation[rcb->coord.y][x]) x++;
+        //     while (x <= 5 && !gcb->hand[0][tile_relation[rcb->coord.y][x]]) x++;
+        //     rcb->coord.x = (x <= 5)? x : rcb->coord.x;
+        // }
+        do {
+            k = (k == 23)? 0 : k + 1;
+        } while (!gcb->hand[0][tile_relation[0][k]] ||
+                 tile_relation[rcb->coord.y][rcb->coord.x] ==
+                 tile_relation[0][k]);
+        rcb->coord.y = k / 6;
+        rcb->coord.x = k % 6;
         break;
     case 'c':
     case 'C':
