@@ -516,7 +516,7 @@ NEW_GAME:
                     }
                     shift_msg(strs, colors);
                     snprintf(strs[6], MAX_LOG_LEN,
-                             "[Hint] Opponent have no more move, your turn.");
+                             "[Hint] Opponent has no more moves, your turn.");
                     *colors[6] = BLUE_PAIR;
                     render_message_log(strs, colors);
                     refresh();
