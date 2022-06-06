@@ -398,14 +398,26 @@ NEW_GAME:
     rcb->coord.x = 0;
     rcb->coord.y = 0;
     
+
+    snprintf(strs[5], MAX_LOG_LEN,
+             "[Hint] Opponent paried! Game start!");
+    snprintf(strs[6], MAX_LOG_LEN,
+             "[Hint] ' ' for temp choice, 'c' to see p1's tiles");
+    *colors[5] = BLUE_PAIR;
+    *colors[6] = BLUE_PAIR;
     render_board(gcb);
     render_tiles(gcb, gcb->turn);
-    render_message_log(strs, colors);
     render_score_board();
     render_score(rcb, !gcb->turn);
     if (gcb->turn == 0) {
         render_tile_preview(gcb, SHAPE_E);
+        shift_msg(strs, colors);
+        snprintf(strs[6], MAX_LOG_LEN,
+                 "[Hint] It's your turn, press 'H' for more hint!");
+        *colors[6] = BLUE_PAIR;
     }
+    render_message_log(strs, colors);
+    
     
     int first_in = 1;
     do {
@@ -477,6 +489,7 @@ NEW_GAME:
                 while (clock() - begin < TIMEOUT);
             }
 
+            shift_msg(strs, colors);
             if (gcb->turn == 1) {
                 // player 0 has no more move
                 frame = get_frame(REQ_PASS, 0, NULL);
@@ -491,12 +504,14 @@ NEW_GAME:
                     clock_t begin = clock();
                     while (clock() - begin < TIMEOUT);
                 }
-                shift_msg(strs, colors);
                 snprintf(strs[6], MAX_LOG_LEN,
                          "[Hint] You have no more moves, passed.");
-                *colors[6] = BLUE_PAIR;
-                render_message_log(strs, colors);
+            } else {
+                snprintf(strs[6], MAX_LOG_LEN,
+                         "[Hint] It's your turn, press 'H' for more hint!");
             }
+            *colors[6] = BLUE_PAIR;
+            render_message_log(strs, colors);
             
             render_board(gcb);
             render_tiles(gcb, gcb->turn);
