@@ -101,7 +101,7 @@ static void *serve(void *argp)
                clientfd, opcode, status);
         printf("%x", code[0]);
         for (int i = 1; i < CODE_LEN; ++i)
-            printf("%-x", code[i]);
+            printf(":%x", code[i]);
         printf(")\n");
 
         if (p->opp_left) {
