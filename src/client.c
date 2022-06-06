@@ -278,8 +278,10 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
         snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! Tie game! ::"); 
         *color[6] = YELLOW_PAIR;
         break;
-    default:
-        return -1;
+    default:  // when game doesn't end in a normal status, then it's abnormal
+        snprintf(msgs[6], MAX_LOG_LEN, ":: Opponent left! You have won the game! ::"); 
+        *color[6] = YELLOW_PAIR;
+        break;
     }
     do {
         shift_msg(msgs, color);
@@ -464,6 +466,8 @@ NEW_GAME:
                         parse_frame(recv_frame, &opcode, &status, code);
                         if (opcode == RES && status == RES_OK) {
                             break;
+                        } else if (opcode == RES_OPPLEFT) {
+                            goto END_OF_GAME;
                         }
                     }
                     clock_t begin = clock();
@@ -483,6 +487,8 @@ NEW_GAME:
                             parse_frame(recv_frame, &opcode, &status, code);
                             if (opcode == RES_EOG && status == RES_OK) {
                                 break;
+                            } else if (opcode == RES_OPPLEFT) {
+                                goto END_OF_GAME;
                             }
                         }
                         clock_t begin = clock();
@@ -501,6 +507,8 @@ NEW_GAME:
                             parse_frame(recv_frame, &opcode, &status, code);
                             if (opcode == RES_PASS && status == RES_OK) {
                                 break;
+                            } else if (opcode == RES_OPPLEFT) {
+                                goto END_OF_GAME;
                             }
                         }
                         clock_t begin = clock();
@@ -531,6 +539,8 @@ NEW_GAME:
                     if (opcode == RES && status == RES_OK && code[0] != -1) {
                         update(gcb, code);
                         break;
+                    } else if (opcode == RES_OPPLEFT) {
+                        goto END_OF_GAME;
                     }
                 }
                 clock_t begin = clock();
@@ -549,6 +559,8 @@ NEW_GAME:
                         parse_frame(recv_frame, &opcode, &status, code);
                         if (opcode == RES_EOG && status == RES_OK) {
                             break;  // expect RES_EOG back from server
+                        } else if (opcode == RES_OPPLEFT) {
+                            goto END_OF_GAME;
                         }
                     }
                     clock_t begin = clock();
@@ -568,6 +580,8 @@ NEW_GAME:
                         parse_frame(recv_frame, &opcode, &status, code);
                         if (opcode == RES_PASS && status == RES_OK) {
                             break;
+                        } else if (opcode == RES_OPPLEFT) {
+                            goto END_OF_GAME;
                         }
                     }
                     clock_t begin = clock();
@@ -616,6 +630,8 @@ NEW_GAME:
     //     clock_t begin = clock();
     //     while (clock() - begin < TIMEOUT);
     // }
+END_OF_GAME:
+    ;
     int game_result = game_over_handler(rcb, strs, colors);
     free(frame);
     free(recv_frame);
