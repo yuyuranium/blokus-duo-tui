@@ -231,9 +231,15 @@ int render_score_board()
     return 0;
 }
 
-int render_score(rcb_t *rcb) {
+int render_score(rcb_t *rcb, int first_in) {
     gcb_t *gcb = rcb->gcb;
-    mvprintw(18, 61, "Player %d", gcb->turn);
+    if (!gcb->turn && first_in) {
+        attron(A_BLINK);
+        mvprintw(18, 61, "Player %d", gcb->turn);
+        attroff(A_BLINK);
+    } else {
+        mvprintw(18, 61, "Player %d", gcb->turn);
+    }
     if (gcb->score[0] > gcb->score[1]) {
         mvprintw(23, 59, "Player 0: %2d", gcb->score[0]);
         mvprintw(24, 59, "Player 1: %2d", gcb->score[1]);
