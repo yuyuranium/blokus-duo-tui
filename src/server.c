@@ -17,10 +17,11 @@ typedef struct player player_t;
 struct player {
     long clientfd;
     int status;
-    int turn;
-    int ended;
-    player_t *opp;
-    char code[CODE_LEN];
+    int turn;             // 0 = current player; 1 = next player
+    int opp_pass;         // set by opp
+    int opp_ended;        // set by opp
+    char code[CODE_LEN];  // set by opp
+    player_t *opp;        // the opponent
 };
 
 static pthread_mutex_t mutex;
@@ -33,7 +34,8 @@ static player_t *init_player(long clientfd)
     p->clientfd = clientfd;
     p->status = STAT_INIT;
     p->turn = -1;
-    p->ended = 0;
+    p->opp_pass = 0;
+    p->opp_ended = 0;
     p->opp = NULL;
     return p;
 }
@@ -95,8 +97,9 @@ static void *serve(void *argp)
 
         printf("info: client fd %ld: request: (%d, %d, ",
                clientfd, opcode, status);
-        for (int i = 0; i < CODE_LEN; ++i)
-            printf("(%x)", code[i]);
+        for (int i = 0; i < CODE_LEN - 1; ++i)
+            printf("%x-", code[i]);
+        printf("%x", code[CODE_LEN - 1]);
         printf(")\n");
 
         switch (opcode) {
@@ -131,7 +134,7 @@ static void *serve(void *argp)
                 code[0] = 1;
                 res(clientfd, PAIRED, code);  // PAIRED, 1
                 break;
-            case STAT_INGAME:
+            default:
                 invalid(clientfd);
                 break;
             }
@@ -156,14 +159,20 @@ static void *serve(void *argp)
 
             // It's p's turn, so recieve update from its opponent
             if (p->turn == 0) {
-                if (p->ended) {
+                if (p->opp_ended) {
+                    p->opp_ended = 0;      // reset flag
                     p->status = STAT_EOG;  // p's opponent requested eog
                     res(clientfd, RES_EOG, NULL);
+                } else if (p->opp_pass) {
+                    p->opp_pass = 0;                // reset flag
+                    res(clientfd, RES_PASS, NULL);  // p's opponent passed
                 } else {
                     res(clientfd, RES, p->code);  // send update code
                 }
             } else {
-                res(clientfd, RES, 0);  // Wait for opponent
+                memset(code, 0, CODE_LEN);
+                code[0] = -1;  // opponent hasn't placed yet
+                res(clientfd, RES, code);
             }
             break;
         case REQ_PLACE:
@@ -174,10 +183,23 @@ static void *serve(void *argp)
             }
 
             memcpy(p->opp->code, code, CODE_LEN);  // opp can update using code
-            p->opp->turn = 0;  // it's oppponent's turn
-            p->turn = 1;  // it's not p's turn
+            p->opp->turn = 0;  // it's now opponent's turn
+            p->turn = 1;       // it's not p's turn
 
             res(clientfd, RES, code);
+            break;
+        case REQ_PASS:
+            // p must be in game and it must p's turn
+            if (p->status != STAT_INGAME || p->turn != 0) {
+                invalid(clientfd);
+                break;
+            }
+
+            p->opp->turn = 0;      // it's now opponent's turn
+            p->opp->opp_pass = 1;  // tell p's opponent p passed
+            p->turn = 1;           // it's not p's turn
+
+            res(clientfd, RES_PASS, NULL);
             break;
         case REQ_EOG:
             // p must be in game and it must p's turn
@@ -186,9 +208,10 @@ static void *serve(void *argp)
                 break;
             }
 
-            p->status = STAT_EOG;  // end-of-game accepted
-            p->opp->turn = 0;
-            p->opp->ended = 1;  // opponent must end its game
+            p->status = STAT_EOG;   // end-of-game accepted
+            p->opp->turn = 0;       // it's now opponent's turn
+            p->opp->opp_ended = 1;  // opponent must end its game
+            p->turn = 1;
 
             res(clientfd, RES_EOG, code);
             break;
