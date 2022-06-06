@@ -20,6 +20,7 @@ struct player {
     int turn;             // 0 = current player; 1 = next player
     int opp_pass;         // set by opp
     int opp_ended;        // set by opp
+    int opp_left;         // set by opp
     char code[CODE_LEN];  // set by opp
     player_t *opp;        // the opponent
 };
@@ -36,6 +37,7 @@ static player_t *init_player(long clientfd)
     p->turn = -1;
     p->opp_pass = 0;
     p->opp_ended = 0;
+    p->opp_left = 0;
     p->opp = NULL;
     return p;
 }
@@ -97,10 +99,18 @@ static void *serve(void *argp)
 
         printf("info: client fd %ld: request: (%d, %d, ",
                clientfd, opcode, status);
-        for (int i = 0; i < CODE_LEN - 1; ++i)
-            printf("%x-", code[i]);
-        printf("%x", code[CODE_LEN - 1]);
+        printf("%x", code[0]);
+        for (int i = 1; i < CODE_LEN; ++i)
+            printf("%-x", code[i]);
         printf(")\n");
+
+        if (p->opp_left) {
+            p->opp_left = 0;             // reset flag
+            p->status = STAT_INIT;       // p goes back to init
+            res(clientfd, RES_OPPL, 0);  // inform client that its opp left
+            free(p->opp);
+            continue;
+        }
 
         switch (opcode) {
         case REQ_PAIR:
@@ -220,9 +230,15 @@ static void *serve(void *argp)
             break;
         }
     }
+    pthread_mutex_lock(&mutex);
     if (waiting_player == p)
-        waiting_player = NULL;
-    free(p);
+        waiting_player = NULL;  // p is waiting
+    pthread_mutex_unlock(&mutex);
+
+    if (p->opp)
+        p->opp->opp_left = 1;  // let p's opp free p is safer
+    else
+        free(p);  // p doesn't have opp, can free p directly
     return NULL;
 }
 
