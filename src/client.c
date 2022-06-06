@@ -455,13 +455,13 @@ NEW_GAME:
                             clock_t begin = clock();
                             while (clock() - begin < TIMEOUT);
                         }
+                        last_player = 0;
                     }
                     break;
             }
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
             }
-            last_player = 0;
         } else {  // wait for other player
             frame = get_frame(REQ_STATUS, 0, NULL);
             while (1) {
