@@ -402,9 +402,9 @@ NEW_GAME:
     snprintf(strs[4], MAX_LOG_LEN,
              "[Hint] Opponent paried! Game start!");
     snprintf(strs[5], MAX_LOG_LEN,
-             "[Hint] ' ' for temp choice, 'q' for cancelling");
+             "[Hint] Press ' ' to choose a tile, and 'q' to cancel");
     snprintf(strs[6], MAX_LOG_LEN,
-             "[Hint] 'c' for checking opponent's tiles");
+             "[Hint] Press 'c' to check opponent's tiles");
     for (int i = 4; i <= 6; ++i)
         *colors[i] = BLUE_PAIR;
     render_board(gcb);
@@ -425,7 +425,7 @@ NEW_GAME:
             if (first_in) {
                 shift_msg(strs, colors);
                 snprintf(strs[6], MAX_LOG_LEN,
-                         "[Hint] It's your turn, press 'H' for more hint!");
+                         "[Hint] It's your turn, press 'H' for hints!");
                 *colors[6] = BLUE_PAIR;
                 render_message_log(strs, colors);
                 refresh();
