@@ -426,6 +426,12 @@ NEW_GAME:
                     clock_t begin = clock();
                     while (clock() - begin < TIMEOUT);
                 }
+                shift_msg(strs, colors);
+                snprintf(strs[6], MAX_LOG_LEN,
+                         "[Hint] Opponent have no more move, your turn.");
+                *colors[6] = BLUE_PAIR;
+                render_message_log(strs, colors);
+                refresh();
             }
             int c = getch();
             switch (rcb->state) {
