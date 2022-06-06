@@ -468,8 +468,8 @@ NEW_GAME:
                 send(client_fd, frame, FRAME_LEN, 0);
                 if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
                     parse_frame(recv_frame, &opcode, &status, code);
-                    if (opcode == RES && status == RES_OK &&
-                        !update(gcb, code)) {
+                    if (opcode == RES && status == RES_OK && code[0] != -1) {
+                        update(gcb, code);
                         break;
                     }
                 }
