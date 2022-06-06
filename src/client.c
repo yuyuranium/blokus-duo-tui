@@ -228,7 +228,7 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
             *color[6] = GREEN_PAIR;
             render_board(gcb);
             render_tiles(gcb, gcb->turn);
-            render_score(rcb);
+            render_score(rcb, 0);
             rcb->state = S_CHOOSE_TILE;
 
             render_message_log(msg, color);
@@ -402,10 +402,12 @@ NEW_GAME:
     render_tiles(gcb, gcb->turn);
     render_message_log(strs, colors);
     render_score_board();
-    render_score(rcb);
-    if (gcb->turn == 0)
+    render_score(rcb, !gcb->turn);
+    if (gcb->turn == 0) {
         render_tile_preview(gcb, SHAPE_E);
-
+    }
+    
+    int first_in = 1;
     do {
         refresh();
 
@@ -458,6 +460,8 @@ NEW_GAME:
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
             }
+            render_score(rcb, first_in);
+            first_in = 0;
         } else {  // wait for other player
             frame = get_frame(REQ_STATUS, 0, NULL);
             while (1) {
@@ -497,7 +501,7 @@ NEW_GAME:
             render_board(gcb);
             render_tiles(gcb, gcb->turn);
             render_score_board();
-            render_score(rcb);
+            render_score(rcb, !gcb->turn);
             
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
