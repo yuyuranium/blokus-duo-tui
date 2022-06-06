@@ -86,7 +86,7 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         }
         break;
     }
-    if (gcb->turn == 0) {
+    if (gcb->turn == 0 && rcb->render_player == 0) {
         render_tile_preview(rcb->gcb,
                             tile_relation[rcb->coord.y][rcb->coord.x]);
     }
@@ -400,18 +400,34 @@ NEW_GAME:
     rcb->coord.y = 0;
     
     render_board(gcb);
-    render_tiles(gcb, rcb->render_player);
+    render_tiles(gcb, gcb->turn);
     render_message_log(strs, colors);
-    render_tile_preview(gcb, SHAPE_E);
     render_score_board();
     render_score(rcb);
+    if (gcb->turn == 0)
+        render_tile_preview(gcb, SHAPE_E);
+
+    int last_player = !gcb->turn;
     
     do {
         refresh();
 
         if (gcb->turn == 0) {
+            if (last_player == 0) {
+                frame = get_frame(REQ_STATUS, 0, gcb->code);
+                while (1) {
+                    send(client_fd, frame, FRAME_LEN, 0);
+                    if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                        parse_frame(recv_frame, &opcode, &status, code);
+                        if (opcode == RES_PASS && status == RES_OK) {
+                            break;
+                        }
+                    }
+                    clock_t begin = clock();
+                    while (clock() - begin < TIMEOUT);
+                }
+            }
             int c = getch();
-            if (c == ERR) continue;
             switch (rcb->state) {
                 case S_CHOOSE_TILE:
                     choose_tile_handler(c, rcb, strs, colors);
@@ -439,6 +455,7 @@ NEW_GAME:
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
             }
+            last_player = 0;
         } else {  // wait for other player
             frame = get_frame(REQ_STATUS, 0, NULL);
             while (1) {
@@ -453,29 +470,52 @@ NEW_GAME:
                 clock_t begin = clock();
                 while (clock() - begin < TIMEOUT);
             }
+
+            if (gcb->turn == 1) {
+                // player 0 has no more move
+                frame = get_frame(REQ_PASS, 0, NULL);
+                while (1) {
+                    send(client_fd, frame, FRAME_LEN, 0);
+                    if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                        parse_frame(recv_frame, &opcode, &status, code);
+                        if (opcode == RES_PASS && status == RES_OK) {
+                            break;
+                        }
+                    }
+                    clock_t begin = clock();
+                    while (clock() - begin < TIMEOUT);
+                }
+                shift_msg(strs, colors);
+                snprintf(strs[6], MAX_LOG_LEN,
+                         "[Hint] You have no more moves, passed.");
+                *colors[6] = BLUE_PAIR;
+                render_message_log(strs, colors);
+            }
             
             render_board(gcb);
             render_tiles(gcb, gcb->turn);
             render_score_board();
             render_score(rcb);
             
-            // find next start candidate tile
-            int tile_found = 0;
-            for (int i = 0; i < 4; ++i) {
-                for (int j = 0; j < 6; ++j) {
-                    if (gcb->hand[0][tile_relation[i][j]]) {
-                        rcb->coord.x = j;
-                        rcb->coord.y = i;
-                        tile_found = 1;
-                        break;
-                    }
-                }
-                if (tile_found) break;
-            }
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
+            } else {
+                // find next start candidate tile
+                int tile_found = 0;
+                for (int i = 0; i < 4; ++i) {
+                    for (int j = 0; j < 6; ++j) {
+                        if (gcb->hand[0][tile_relation[i][j]]) {
+                            rcb->coord.x = j;
+                            rcb->coord.y = i;
+                            tile_found = 1;
+                            break;
+                        }
+                    }
+                    if (tile_found) break;
+                }
             }
             render_tile_preview(gcb, tile_relation[rcb->coord.y][rcb->coord.x]);
+            last_player = 1;
         }
     } while (1);
     
