@@ -478,8 +478,8 @@ NEW_GAME:
             if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
                 break;
             }
-            render_score(rcb, first_in);
             first_in = 0;
+            render_score(rcb, first_in);
         } else {  // wait for other player
             frame = get_frame(REQ_STATUS, 0, NULL);
             while (1) {
