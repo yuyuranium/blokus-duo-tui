@@ -554,7 +554,6 @@ NEW_GAME:
             render_tiles(gcb, gcb->turn);
             render_score_board();
             render_score(rcb, !gcb->turn);
-            refresh();
             
             // Game ended, send REQ_EOG to server
             if (gcb->status == EOG_P || gcb->status == EOG_Q ||
@@ -621,7 +620,7 @@ NEW_GAME:
     } while (1);
     
 END_OF_GAME:
-    ;
+    refresh();
     int game_result = game_over_handler(rcb, strs, colors);
     free(frame);
     free(recv_frame);
