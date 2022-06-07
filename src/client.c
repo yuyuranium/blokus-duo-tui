@@ -616,20 +616,6 @@ NEW_GAME:
         }
     } while (1);
     
-    // memset(code, 0, CODE_LEN);
-    // code[0] = gcb->status;
-    // frame = get_frame(REQ_EOG, 0, code);
-    // while (1) {
-    //     send(client_fd, frame, FRAME_LEN, 0);
-    //     if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-    //         parse_frame(recv_frame, &opcode, &status, code);
-    //         if (opcode == RES_EOG && status == RES_OK) {
-    //             break;
-    //         }
-    //     }
-    //     clock_t begin = clock();
-    //     while (clock() - begin < TIMEOUT);
-    // }
 END_OF_GAME:
     ;
     int game_result = game_over_handler(rcb, strs, colors);
