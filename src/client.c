@@ -402,8 +402,8 @@ NEW_GAME:
     char *strs[7];
     int *colors[7];
     for (int i = 0; i < 7; ++i) {
-        strs[i] = malloc(sizeof(char) * MAX_LOG_LEN);
-        colors[i] = malloc(sizeof(int));
+        strs[i] = calloc(MAX_LOG_LEN, sizeof(char));
+        colors[i] = calloc(1, sizeof(int));
         *colors[i] = 0; 
     }
     
