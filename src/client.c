@@ -38,7 +38,7 @@ int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         while (k != j && (!gcb->hand[0][tile_relation[0][k]] ||
                tile_relation[rcb->coord.y][rcb->coord.x] ==
                tile_relation[0][k])) {
-            k++;
+            k = (k == 23)? 0 : k + 1;
         }
         rcb->coord.y = k / 6;
         rcb->coord.x = k % 6;
@@ -278,8 +278,10 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
         snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! Tie game! ::"); 
         *color[6] = YELLOW_PAIR;
         break;
-    default:
-        return -1;
+    default:  // when game doesn't end in a normal status, then it's abnormal
+        snprintf(msgs[6], MAX_LOG_LEN, ":: Opponent left! You have won the game! ::"); 
+        *color[6] = YELLOW_PAIR;
+        break;
     }
     do {
         shift_msg(msgs, color);
@@ -304,14 +306,14 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
 
 int main(int argc, char *argv[])
 {
-    char host[30] = {0};
-    char port[5] = {0};
+    char *host = NULL, *port = NULL;
     
     --argc; ++argv;
     if (argc > 0 && **argv == '-' && (*argv)[1] == 'h') {
         --argc; ++argv;
         if (argc < 1)
             return -1;
+        host = malloc(sizeof(char) * strlen(*argv) + 1);
         strncpy(host, *argv, strlen(*argv));
         printf("%s\n", host);
     }
@@ -321,6 +323,7 @@ int main(int argc, char *argv[])
         --argc; ++argv;
         if (argc < 1)
             return -1;
+        port = malloc(sizeof(char) * strlen(*argv) + 1);
         strncpy(port, *argv, strlen(*argv));
         printf("%s\n", port);
     }
@@ -399,8 +402,8 @@ NEW_GAME:
     char *strs[7];
     int *colors[7];
     for (int i = 0; i < 7; ++i) {
-        strs[i] = malloc(sizeof(char) * MAX_LOG_LEN);
-        colors[i] = malloc(sizeof(int));
+        strs[i] = calloc(MAX_LOG_LEN, sizeof(char));
+        colors[i] = calloc(1, sizeof(int));
         *colors[i] = 0; 
     }
     
@@ -452,45 +455,79 @@ NEW_GAME:
                 positioning_handler(c, rcb, strs, colors);
                 break;
             case S_PLACING:
-                if (placing_handler(c, rcb, strs, colors) == 0) {
-                    frame = get_frame(REQ_PLACE, 0, gcb->code);
+                if (placing_handler(c, rcb, strs, colors) != 0)
+                    break;  // not correctly placed, break
+
+                // Send my update to server and expect a RES
+                frame = get_frame(REQ_PLACE, 0, gcb->code);
+                while (1) {
+                    send(client_fd, frame, FRAME_LEN, 0);
+                    if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                        parse_frame(recv_frame, &opcode, &status, code);
+                        if (opcode == RES && status == RES_OK) {
+                            break;
+                        } else if (opcode == RES_OPPLEFT) {
+                            goto END_OF_GAME;
+                        }
+                    }
+                    clock_t begin = clock();
+                    while (clock() - begin < TIMEOUT);
+                }
+
+                // Game ended, keep sending REQ_STATUS and expect server sending
+                // a RES_EOG back
+                if (gcb->status == EOG_P || gcb->status == EOG_Q ||
+                    gcb->status == EOG_T) {
+                    memset(code, 0, CODE_LEN);
+                    code[0] = gcb->status;
+                    frame = get_frame(REQ_STATUS, 0, code);
                     while (1) {
                         send(client_fd, frame, FRAME_LEN, 0);
                         if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
                             parse_frame(recv_frame, &opcode, &status, code);
-                            if (opcode == RES && status == RES_OK) {
+                            if (opcode == RES_EOG && status == RES_OK) {
                                 break;
+                            } else if (opcode == RES_OPPLEFT) {
+                                goto END_OF_GAME;
                             }
                         }
                         clock_t begin = clock();
                         while (clock() - begin < TIMEOUT);
                     }
-                    if (gcb->turn == 0) {
-                        frame = get_frame(REQ_STATUS, 0, gcb->code);
-                        while (1) {
-                            send(client_fd, frame, FRAME_LEN, 0);
-                            if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-                                parse_frame(recv_frame, &opcode, &status, code);
-                                if (opcode == RES_PASS && status == RES_OK) {
-                                    break;
-                                }
+                    break;  // break outer while
+                }
+                
+                // After REQ_PLACE successfully, gcb still shows my turn, expect
+                // a RES_PASS from server
+                if (gcb->turn == 0) {
+                    frame = get_frame(REQ_STATUS, 0, gcb->code);
+                    while (1) {
+                        send(client_fd, frame, FRAME_LEN, 0);
+                        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                            parse_frame(recv_frame, &opcode, &status, code);
+                            if (opcode == RES_PASS && status == RES_OK) {
+                                break;
+                            } else if (opcode == RES_OPPLEFT) {
+                                goto END_OF_GAME;
                             }
-                            clock_t begin = clock();
-                            while (clock() - begin < TIMEOUT);
                         }
-                        shift_msg(strs, colors);
-                        snprintf(strs[6], MAX_LOG_LEN,
-                                 "[Hint] Opponent have no more move, your turn.");
-                        *colors[6] = BLUE_PAIR;
-                        render_message_log(strs, colors);
-                        refresh();
+                        clock_t begin = clock();
+                        while (clock() - begin < TIMEOUT);
                     }
+                    shift_msg(strs, colors);
+                    snprintf(strs[6], MAX_LOG_LEN,
+                             "[Hint] Opponent has no more moves, your turn.");
+                    *colors[6] = BLUE_PAIR;
+                    render_message_log(strs, colors);
+                    refresh();
                 }
                 break;
             }
-            if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
-                break;
-            }
+
+            // If game ended, break the outer loop also
+            if (gcb->status == EOG_P || gcb->status == EOG_Q ||
+                gcb->status == EOG_T) break;
+
             first_in = 0;
             render_score(rcb, first_in);
         } else {  // wait for other player
@@ -502,12 +539,38 @@ NEW_GAME:
                     if (opcode == RES && status == RES_OK && code[0] != -1) {
                         update(gcb, code);
                         break;
+                    } else if (opcode == RES_OPPLEFT) {
+                        goto END_OF_GAME;
                     }
                 }
                 clock_t begin = clock();
                 while (clock() - begin < TIMEOUT);
             }
 
+            // Game ended, send REQ_EOG to server
+            if (gcb->status == EOG_P || gcb->status == EOG_Q ||
+                gcb->status == EOG_T) {
+                memset(code, 0, CODE_LEN);
+                code[0] = gcb->status;
+                frame = get_frame(REQ_EOG, 0, code);
+                while (1) {
+                    send(client_fd, frame, FRAME_LEN, 0);
+                    if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
+                        parse_frame(recv_frame, &opcode, &status, code);
+                        if (opcode == RES_EOG && status == RES_OK) {
+                            break;  // expect RES_EOG back from server
+                        } else if (opcode == RES_OPPLEFT) {
+                            goto END_OF_GAME;
+                        }
+                    }
+                    clock_t begin = clock();
+                    while (clock() - begin < TIMEOUT);
+                }
+                break;  // break outer while
+            }
+
+            // After REQ_STATUS and using the code to update gcb, gcb shows
+            // it's still opponent's turn, so expect a RES_PASS from server
             if (gcb->turn == 1) {
                 // player 0 has no more move
                 frame = get_frame(REQ_PASS, 0, NULL);
@@ -517,6 +580,8 @@ NEW_GAME:
                         parse_frame(recv_frame, &opcode, &status, code);
                         if (opcode == RES_PASS && status == RES_OK) {
                             break;
+                        } else if (opcode == RES_OPPLEFT) {
+                            goto END_OF_GAME;
                         }
                     }
                     clock_t begin = clock();
@@ -534,9 +599,6 @@ NEW_GAME:
             render_score_board();
             render_score(rcb, !gcb->turn);
             
-            if (gcb->status == EOG_P || gcb->status == EOG_Q || gcb->status == EOG_T) {
-                break;
-            }
             // find next start candidate tile
             int tile_found = 0;
             for (int i = 0; i < 4; ++i) {
@@ -554,20 +616,8 @@ NEW_GAME:
         }
     } while (1);
     
-    memset(code, 0, CODE_LEN);
-    code[0] = gcb->status;
-    frame = get_frame(REQ_EOG, 0, code);
-    while (1) {
-        send(client_fd, frame, FRAME_LEN, 0);
-        if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
-            parse_frame(recv_frame, &opcode, &status, code);
-            if (opcode == RES_EOG && status == RES_OK) {
-                break;
-            }
-        }
-        clock_t begin = clock();
-        while (clock() - begin < TIMEOUT);
-    }
+END_OF_GAME:
+    ;
     int game_result = game_over_handler(rcb, strs, colors);
     free(frame);
     free(recv_frame);
