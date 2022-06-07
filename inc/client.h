@@ -10,5 +10,6 @@
 int choose_tile_handler(int c, rcb_t *rcb, char *msg[7], int *color[7]);
 int positioning_handler(int c, rcb_t *rcb, char *msgs[7], int *color[7]);
 int placing_handler(int c, rcb_t *rcb, char *msgs[7], int *color[7]);
+int opponent_place_handler(rcb_t *rcb, char *code, char *msgs[7], int *color[7]);
 int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7]);
 #endif

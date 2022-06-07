@@ -261,6 +261,19 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
     return 0;
 }
 
+int opponent_place_handler(rcb_t *rcb, char *code, char *msgs[7], int *color[7])
+{
+    update(rcb->gcb, code);
+    shift_msg(msgs, color);
+    snprintf(msgs[6], MAX_LOG_LEN, 
+             "Opponent place tile '%c' at (%x, %x)", TILE[(int)code[0]].alpha,
+             code[1], code[2]); 
+    *color[6] = YELLOW_PAIR;
+    render_message_log(msgs, color);
+    return 0;
+}
+
+
 int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
 {
     gcb_t *gcb = rcb->gcb;
@@ -537,7 +550,7 @@ NEW_GAME:
                 if (recv(client_fd, recv_frame, FRAME_LEN, 0) > 0) {
                     parse_frame(recv_frame, &opcode, &status, code);
                     if (opcode == RES && status == RES_OK && code[0] != -1) {
-                        update(gcb, code);
+                        opponent_place_handler(rcb, code, strs, colors);
                         break;
                     } else if (opcode == RES_OPPLEFT) {
                         goto END_OF_GAME;
@@ -594,6 +607,7 @@ NEW_GAME:
                 render_message_log(strs, colors);
             }
             
+            first_in = 1;
             render_board(gcb);
             render_tiles(gcb, gcb->turn);
             render_score_board();
