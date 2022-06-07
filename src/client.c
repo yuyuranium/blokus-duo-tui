@@ -267,11 +267,13 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
     shift_msg(msgs, color);
     switch (gcb->status) {
     case EOG_P:
-        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have won the game! ::"); 
+        snprintf(msgs[6], MAX_LOG_LEN,
+                 ":: GAME OVER! You have won the game! ::"); 
         *color[6] = GREEN_PAIR;
         break;
     case EOG_Q:
-        snprintf(msgs[6], MAX_LOG_LEN, ":: GAME OVER! You have lose the game! ::"); 
+        snprintf(msgs[6], MAX_LOG_LEN,
+                 ":: GAME OVER! You have lose the game! ::"); 
         *color[6] = RED_PAIR;
         break;
     case EOG_T:
@@ -279,7 +281,8 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
         *color[6] = YELLOW_PAIR;
         break;
     default:  // when game doesn't end in a normal status, then it's abnormal
-        snprintf(msgs[6], MAX_LOG_LEN, ":: Opponent left! You have won the game! ::"); 
+        snprintf(msgs[6], MAX_LOG_LEN,
+                 ":: Opponent left! You have won the game! ::"); 
         *color[6] = YELLOW_PAIR;
         break;
     }
@@ -547,6 +550,11 @@ NEW_GAME:
                 while (clock() - begin < TIMEOUT);
             }
 
+            render_board(gcb);
+            render_tiles(gcb, gcb->turn);
+            render_score_board();
+            render_score(rcb, !gcb->turn);
+            
             // Game ended, send REQ_EOG to server
             if (gcb->status == EOG_P || gcb->status == EOG_Q ||
                 gcb->status == EOG_T) {
@@ -570,7 +578,7 @@ NEW_GAME:
             }
 
             // After REQ_STATUS and using the code to update gcb, gcb shows
-            // it's still opponent's turn, so expect a RES_PASS from server
+            // it's still opponent's turn, so send a RES_PASS to server
             if (gcb->turn == 1) {
                 // player 0 has no more move
                 frame = get_frame(REQ_PASS, 0, NULL);
@@ -594,11 +602,6 @@ NEW_GAME:
                 render_message_log(strs, colors);
             }
             
-            render_board(gcb);
-            render_tiles(gcb, gcb->turn);
-            render_score_board();
-            render_score(rcb, !gcb->turn);
-            
             // find next start candidate tile
             int tile_found = 0;
             for (int i = 0; i < 4; ++i) {
@@ -617,7 +620,7 @@ NEW_GAME:
     } while (1);
     
 END_OF_GAME:
-    ;
+    refresh();
     int game_result = game_over_handler(rcb, strs, colors);
     free(frame);
     free(recv_frame);
