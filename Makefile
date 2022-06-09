@@ -14,7 +14,8 @@ CLIENT_TARGET := $(BUILD_DIR)/client
 __dir := $(shell mkdir -p $(BUILD_DIR))
 
 DEBUG = -g
-CFLAGS = -Wall -I$(INC_DIR) $(DEBUG)
+OPT = -O
+CFLAGS = -Wall -I$(INC_DIR) $(OPT)
 LDFLAGS = -lpthread -lncursesw
 
 .PHONY: clean all
