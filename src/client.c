@@ -258,7 +258,7 @@ int placing_handler(int c, rcb_t *rcb, char *msg[7], int *color[7])
         rcb->state = S_POSITIONING;
         return -1;
     } 
-    return 0;
+    return -1;
 }
 
 int opponent_place_handler(rcb_t *rcb, char *code, char *msgs[7], int *color[7])
