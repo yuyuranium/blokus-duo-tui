@@ -323,15 +323,19 @@ int game_over_handler(rcb_t *rcb, char *msgs[7], int *color[7])
 int main(int argc, char *argv[])
 {
     char *host = NULL, *port = NULL;
+
+    if (argc != 5) {
+        printf("Usage: ./client -i server_ip -p server_port\n");
+        return -1;
+    }
     
     --argc; ++argv;
-    if (argc > 0 && **argv == '-' && (*argv)[1] == 'h') {
+    if (argc > 0 && **argv == '-' && (*argv)[1] == 'i') {
         --argc; ++argv;
         if (argc < 1)
             return -1;
         host = malloc(sizeof(char) * strlen(*argv) + 1);
         strncpy(host, *argv, strlen(*argv));
-        printf("%s\n", host);
     }
     
     --argc; ++argv;
@@ -341,12 +345,13 @@ int main(int argc, char *argv[])
             return -1;
         port = malloc(sizeof(char) * strlen(*argv) + 1);
         strncpy(port, *argv, strlen(*argv));
-        printf("%s\n", port);
     }
 
-    if (host[0] == 0 || port[0] == 0) {
+    if (host == NULL || port == NULL) {
         printf("[Error] Server host or port not specified. Exit game.\n");
         exit(-1);
+    } else {
+        printf("[Info] Input host: %s, port: %s\n", host, port);
     }
 
     int client_fd __attribute__((unused)) = open_clientfd(host, port);
@@ -354,6 +359,8 @@ int main(int argc, char *argv[])
         printf("[Error] Client file descriptor open failed.\n");
         printf("[Error] Please check host and port again.\n");
         exit(-1);
+    } else {
+        printf("[Info] Connection established\n");
     }
 
 NEW_GAME:
