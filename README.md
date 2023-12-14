@@ -1,6 +1,9 @@
 # blokus-duo-cli
 Online Blockus Duo game in command line interface.
 
+![image](https://github.com/yuyuranium/blokus-duo-tui/assets/79467307/421e4aa0-d3bb-4265-b283-d3c2934f4580)
+
+
 ## Installation
 Latest prebuilt version could be find [here](https://github.com/yuyuranium/blokus-duo-tui/releases/tag/v0.0.1)
 ### Manual buid
